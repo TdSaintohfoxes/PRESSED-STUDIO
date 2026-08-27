@@ -143,6 +143,22 @@ body.show-m-actions .app{padding-bottom:calc(150px + env(safe-area-inset-bottom,
 .account-stat b{display:block;font:700 18px Inter,sans-serif;color:var(--text);margin-bottom:2px}
 .account-stat span{font:500 10px Inter,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
 .account-section-label{font:700 10px Inter,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin:8px 0 0}
+.accent-swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.accent-swatches button{width:32px;height:32px;border-radius:10px;border:2px solid transparent;cursor:pointer;padding:0}
+.accent-swatches button.active{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.pw-row{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.pw-row input{width:100%;background:#0d111c;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 12px;font:13px Inter,sans-serif}
+.onboard-ov{position:fixed;inset:0;z-index:220;background:rgba(7,9,14,.92);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px)}
+.onboard-ov.hidden{display:none!important}
+.onboard-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 22px;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.onboard-card h2{margin:0 0 8px;font:700 22px 'Playfair Display',serif;letter-spacing:-.3px}
+.onboard-card p{margin:0 0 18px;font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-line}
+.onboard-steps{display:flex;gap:6px;margin-bottom:18px}
+.onboard-steps span{flex:1;height:4px;border-radius:99px;background:#1a2235}
+.onboard-steps span.on{background:var(--accent)}
+.onboard-card .btn{width:100%;min-height:46px;margin-top:8px}
+.backup-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
 .quickstart{display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;overflow-y:hidden;padding:8px 4px;margin:0 0 12px;border:0;border-radius:0;background:transparent;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
 .quickstart::-webkit-scrollbar{display:none}
 .quickstart .btn{flex:0 0 auto!important;min-width:0!important;width:auto!important;white-space:nowrap;padding:9px 14px;font-size:12px;min-height:40px;border-radius:999px;background:#121a2c;border-color:var(--line)}
@@ -866,6 +882,28 @@ Everybody needs you</textarea></div>
 <input id="settingsName" type="text" placeholder="Your name" style="margin-top:10px">
 <button class="btn secondary" id="settingsSaveName" type="button">Save name</button>
 </div>
+<div class="account-row">
+<h4>Accent colour</h4>
+<p>Colours your avatar on this device</p>
+<div class="accent-swatches" id="accentSwatches">
+<button type="button" data-accent="#4f9dff" style="background:#4f9dff" title="Blue"></button>
+<button type="button" data-accent="#ff6b8a" style="background:#ff6b8a" title="Rose"></button>
+<button type="button" data-accent="#6dff8a" style="background:#6dff8a" title="Green"></button>
+<button type="button" data-accent="#f0c14b" style="background:#f0c14b" title="Gold"></button>
+<button type="button" data-accent="#c4b5fd" style="background:#c4b5fd" title="Lilac"></button>
+<button type="button" data-accent="#ff8a65" style="background:#ff8a65" title="Coral"></button>
+</div>
+</div>
+<div class="account-row">
+<h4>Change password</h4>
+<p>Only on this device — there is no email reset</p>
+<div class="pw-row">
+<input id="pwCurrent" type="password" autocomplete="current-password" placeholder="Current password">
+<input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (min 4)">
+<input id="pwNew2" type="password" autocomplete="new-password" placeholder="Confirm new password">
+<button class="btn secondary" id="changePassBtn" type="button">Update password</button>
+</div>
+</div>
 
 <p class="account-section-label">Preferences</p>
 <div class="account-row">
@@ -882,6 +920,16 @@ Everybody needs you</textarea></div>
 <p>Small credit mark on every card</p>
 <input id="accountBrandStamp" type="text" placeholder="PRESSED." style="margin-top:10px">
 <button class="btn secondary" id="accountSaveStamp" type="button">Save stamp</button>
+</div>
+
+<p class="account-section-label">Backup</p>
+<div class="account-row">
+<h4>Export / import</h4>
+<p>Download a JSON backup of this account’s Saved projects &amp; collections, or restore one.</p>
+<div class="backup-actions">
+<button class="btn secondary" id="exportBackupBtn" type="button">Export backup</button>
+<label class="btn secondary" style="display:grid;place-items:center;margin:0;cursor:pointer">Import backup<input id="importBackupInput" type="file" accept="application/json,.json" class="hidden"></label>
+</div>
 </div>
 
 <p class="account-section-label">About</p>
@@ -904,6 +952,17 @@ Everybody needs you</textarea></div>
 </div>
 </section>
 
+<!-- Onboarding after first signup -->
+<div class="onboard-ov hidden" id="onboardOv" aria-hidden="true">
+<div class="onboard-card">
+<div class="onboard-steps" id="onboardSteps"><span class="on"></span><span></span><span></span></div>
+<h2 id="onboardTitle">Welcome</h2>
+<p id="onboardBody">Three quick steps to make your first card.</p>
+<button class="btn primary" id="onboardNext" type="button">Next</button>
+<button class="btn secondary" id="onboardSkip" type="button">Skip for now</button>
+</div>
+</div>
+
 </div>
 
 <div class="carousel-ov" id="carouselOv"><button class="btn danger carousel-close" id="carouselClose">✕</button><div class="carousel-stage"><img id="carouselImg" alt=""></div><div class="carousel-ctl"><button class="btn" id="carPrev">‹</button><span class="carousel-count" id="carCount">1 / 1</span><button class="btn" id="carNext">›</button></div></div>
@@ -921,6 +980,8 @@ let hitMap=[],drag=null; // drag:{id,startX,startY,origNx,origNy}
 /* ===== Accounts (on-device) ===== */
 const ACCTS_KEY='pressed_accounts_v1',SESSION_KEY='pressed_session_v1';
 let currentUser=null;
+// Declared early: refreshSettingsUI / initAuth run before the old declaration site
+let brandStamp=(()=>{try{return localStorage.getItem('pressed_brand_v1')||'PRESSED.'}catch(e){return 'PRESSED.'}})();
 async function hashPass(p){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('pressed|'+p));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -931,34 +992,148 @@ function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'
 function setSession(u){if(u)localStorage.setItem(SESSION_KEY,JSON.stringify({id:u.id,user:u.user,name:u.name}));else localStorage.removeItem(SESSION_KEY)}
 function acctKey(base){return currentUser?base+'__'+currentUser.id:base}
 function showAuth(on){
-  const a=$('authScreen'),app=$('appShell');
-  if(a)a.classList.toggle('hidden',!on);
-  if(app)app.style.visibility=on?'hidden':'visible';
-  document.body.classList.toggle('authed-out',!!on);
-  if(on){try{renderAuthAccounts()}catch(e){}}
+  try{
+    const a=$('authScreen'),app=$('appShell');
+    if(a)a.classList.toggle('hidden',!on);
+    if(app){
+      app.style.visibility=on?'hidden':'visible';
+      // Ensure app is interactable when auth is dismissed
+      if(!on){app.style.pointerEvents='auto';app.removeAttribute('aria-hidden')}
+      else{app.setAttribute('aria-hidden','true')}
+    }
+    document.body.classList.toggle('authed-out',!!on);
+    if(on){try{if(typeof renderAuthAccounts==='function')renderAuthAccounts()}catch(e){}}
+  }catch(e){}
 }
 function setAuthErr(msg){const e=$('authErr');if(e)e.textContent=msg||''}
+function getAccent(){
+  return (currentUser&&currentUser.settings&&currentUser.settings.accent)||'#4f9dff';
+}
+function applyAccentToUI(){
+  const c=getAccent();
+  if($('accountAv')){$('accountAv').style.background='linear-gradient(145deg,'+c+','+c+'cc)';}
+  document.querySelectorAll('#accentSwatches button').forEach(b=>b.classList.toggle('active',b.dataset.accent===c));
+}
 function refreshSettingsUI(){
-  const name=currentUser?(currentUser.name||currentUser.user):'Guest';
-  const handle=currentUser?('@'+currentUser.user+' · this device only'):'Not signed in · local only';
-  const initial=(name||'P').trim().charAt(0).toUpperCase();
-  if($('accountDisplayName'))$('accountDisplayName').textContent=name;
-  if($('accountHandle'))$('accountHandle').textContent=handle;
-  if($('accountAv'))$('accountAv').textContent=initial;
-  if($('settingsName'))$('settingsName').value=currentUser?(currentUser.name||''):'';
-  if($('accountBrandStamp'))$('accountBrandStamp').value=brandStamp||'PRESSED.';
-  const defFmt=(currentUser&&currentUser.settings&&currentUser.settings.defaultFormat)||'square';
-  document.querySelectorAll('.set-fmt').forEach(b=>b.classList.toggle('active',b.dataset.fmt===defFmt));
   try{
-    if($('statSaved'))$('statSaved').textContent=String(loadLib().length);
-    if($('statColls'))$('statColls').textContent=String(loadColl().length);
-    if($('statDays')){
-      if(currentUser&&currentUser.createdAt){
-        const d=new Date(currentUser.createdAt);
-        $('statDays').textContent=d.toLocaleDateString(undefined,{month:'short',year:'2-digit'});
-      }else $('statDays').textContent='—';
-    }
+    const name=currentUser?(currentUser.name||currentUser.user):'Guest';
+    const handle=currentUser?('@'+currentUser.user+' · this device only'):'Not signed in · local only';
+    const initial=(name||'P').trim().charAt(0).toUpperCase();
+    if($('accountDisplayName'))$('accountDisplayName').textContent=name;
+    if($('accountHandle'))$('accountHandle').textContent=handle;
+    if($('accountAv'))$('accountAv').textContent=initial;
+    if($('settingsName'))$('settingsName').value=currentUser?(currentUser.name||''):'';
+    const stamp=(typeof brandStamp!=='undefined'&&brandStamp)?brandStamp:'PRESSED.';
+    if($('accountBrandStamp'))$('accountBrandStamp').value=stamp;
+    const defFmt=(currentUser&&currentUser.settings&&currentUser.settings.defaultFormat)||'square';
+    document.querySelectorAll('.set-fmt').forEach(b=>b.classList.toggle('active',b.dataset.fmt===defFmt));
+    try{applyAccentToUI()}catch(e){}
+    const signed=!!currentUser;
+    ['changePassBtn','exportBackupBtn','pwCurrent','pwNew','pwNew2'].forEach(id=>{const el=$(id);if(el)el.disabled=!signed});
+    try{
+      if(typeof loadLib==='function'&&$('statSaved'))$('statSaved').textContent=String(loadLib().length);
+      if(typeof loadColl==='function'&&$('statColls'))$('statColls').textContent=String(loadColl().length);
+      if($('statDays')){
+        if(currentUser&&currentUser.createdAt){
+          const d=new Date(currentUser.createdAt);
+          $('statDays').textContent=d.toLocaleDateString(undefined,{month:'short',year:'2-digit'});
+        }else $('statDays').textContent='—';
+      }
+    }catch(e){}
   }catch(e){}
+}
+async function changePassword(){
+  if(!currentUser)return toast('Sign in first');
+  const cur=($('pwCurrent')&&$('pwCurrent').value)||'';
+  const n1=($('pwNew')&&$('pwNew').value)||'';
+  const n2=($('pwNew2')&&$('pwNew2').value)||'';
+  if(!cur||!n1)return toast('Fill current and new password');
+  if(n1.length<4)return toast('New password needs at least 4 characters');
+  if(n1!==n2)return toast('New passwords do not match');
+  const hash=await hashPass(cur);
+  if(hash!==currentUser.hash)return toast('Current password is wrong');
+  const newHash=await hashPass(n1);
+  currentUser.hash=newHash;
+  const arr=loadAccounts();const i=arr.findIndex(a=>a.id===currentUser.id);
+  if(i>=0){arr[i].hash=newHash;saveAccounts(arr)}
+  if($('pwCurrent'))$('pwCurrent').value='';
+  if($('pwNew'))$('pwNew').value='';
+  if($('pwNew2'))$('pwNew2').value='';
+  toast('Password updated');
+}
+function exportBackup(){
+  if(!currentUser)return toast('Sign in to export this account');
+  const payload={
+    type:'pressed-backup',
+    version:1,
+    exportedAt:Date.now(),
+    account:{id:currentUser.id,user:currentUser.user,name:currentUser.name,createdAt:currentUser.createdAt,settings:currentUser.settings||{}},
+    library:loadLib(),
+    collections:loadColl()
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.download='pressed-backup-'+currentUser.user+'.json';
+  a.href=URL.createObjectURL(blob);
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('Backup downloaded');
+}
+function importBackup(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!data||data.type!=='pressed-backup')return toast('Not a PRESSED backup file');
+      if(!currentUser)return toast('Sign in first, then import into this account');
+      if(!confirm('Replace Saved projects and collections for @'+currentUser.user+' with this backup?'))return;
+      const lib=Array.isArray(data.library)?data.library:[];
+      const coll=Array.isArray(data.collections)?data.collections:[];
+      saveLib(lib);
+      saveColl(coll);
+      if(data.account&&data.account.settings){
+        currentUser.settings=Object.assign({},currentUser.settings||{},data.account.settings);
+        const arr=loadAccounts();const i=arr.findIndex(a=>a.id===currentUser.id);
+        if(i>=0){arr[i].settings=currentUser.settings;saveAccounts(arr)}
+      }
+      refreshSettingsUI();
+      try{renderLibrary()}catch(e){}
+      try{renderCollections()}catch(e){}
+      toast('Backup restored · '+lib.length+' projects');
+    }catch(e){toast('Could not read that file')}
+  };
+  reader.readAsText(file);
+}
+// Onboarding
+const ONBOARD_KEY='pressed_onboard_v1';
+let onboardStep=0;
+const ONBOARD_STEPS=[
+  {title:'Welcome to PRESSED',body:'Make lyric cards, film looks, and quotes. Everything stays on this device until you export a backup.',btn:'Show me around'},
+  {title:'Create in three moves',body:'1 · Add a photo or solid background\n2 · Type or fetch lyrics\n3 · Pick a Look — or try Film look / Surprise Me',btn:'Next'},
+  {title:'Save & Account',body:'Save projects under Saved. Open Account to change your name, accent, password, or export a backup.',btn:'Start creating'}
+];
+function showOnboarding(force){
+  if(!force){
+    try{if(localStorage.getItem(ONBOARD_KEY)==='1')return}catch(e){}
+  }
+  onboardStep=0;
+  const ov=$('onboardOv');if(!ov)return;
+  ov.classList.remove('hidden');ov.setAttribute('aria-hidden','false');
+  paintOnboard();
+}
+function hideOnboarding(done){
+  const ov=$('onboardOv');if(!ov)return;
+  ov.classList.add('hidden');ov.setAttribute('aria-hidden','true');
+  if(done){try{localStorage.setItem(ONBOARD_KEY,'1')}catch(e){}}
+}
+function paintOnboard(){
+  const s=ONBOARD_STEPS[onboardStep]||ONBOARD_STEPS[0];
+  if($('onboardTitle'))$('onboardTitle').textContent=s.title;
+  if($('onboardBody'))$('onboardBody').textContent=s.body;
+  if($('onboardNext'))$('onboardNext').textContent=s.btn;
+  const steps=$('onboardSteps');
+  if(steps)[...steps.children].forEach((el,i)=>el.classList.toggle('on',i<=onboardStep));
 }
 function renderAuthAccounts(){
   const wrap=$('authAccountsWrap'),list=$('authAccountsList');
@@ -997,10 +1172,11 @@ async function doSignup(){
   const arr=loadAccounts();
   if(arr.some(a=>a.user===user))return setAuthErr('That username is taken on this device');
   const hash=await hashPass(pass);
-  const u={id:'u'+Date.now(),user,name:name||user,hash,createdAt:Date.now(),settings:{defaultFormat:'square'}};
+  const u={id:'u'+Date.now(),user,name:name||user,hash,createdAt:Date.now(),settings:{defaultFormat:'square',accent:'#4f9dff'}};
   arr.push(u);saveAccounts(arr);currentUser=u;setSession(u);showAuth(false);refreshSettingsUI();
   if(u.settings.defaultFormat){format=u.settings.defaultFormat;try{document.querySelectorAll('.format').forEach(x=>x.classList.toggle('active',x.dataset.format===format))}catch(e){}resizeCanvas&&resizeCanvas();draw&&draw()}
   toast('Welcome, '+(u.name||u.user));
+  setTimeout(()=>showOnboarding(true),400);
 }
 async function doLogin(){
   setAuthErr('');
@@ -1051,6 +1227,22 @@ if($('accountSaveStamp'))$('accountSaveStamp').onclick=()=>{
   if($('brandStamp'))$('brandStamp').value=brandStamp;
   draw();toast('Stamp saved');
 };
+if($('changePassBtn'))$('changePassBtn').onclick=()=>changePassword();
+if($('exportBackupBtn'))$('exportBackupBtn').onclick=()=>exportBackup();
+if($('importBackupInput'))$('importBackupInput').onchange=e=>{const f=e.target.files&&e.target.files[0];importBackup(f);e.target.value='';};
+document.querySelectorAll('#accentSwatches button').forEach(b=>b.onclick=()=>{
+  if(!currentUser)return toast('Sign in to save accent');
+  currentUser.settings=currentUser.settings||{};
+  currentUser.settings.accent=b.dataset.accent;
+  const arr=loadAccounts();const i=arr.findIndex(a=>a.id===currentUser.id);
+  if(i>=0){arr[i].settings=currentUser.settings;saveAccounts(arr)}
+  applyAccentToUI();toast('Accent saved');
+});
+if($('onboardNext'))$('onboardNext').onclick=()=>{
+  if(onboardStep<ONBOARD_STEPS.length-1){onboardStep++;paintOnboard();return}
+  hideOnboarding(true);showView('create');toast('You’re in — try Surprise Me');
+};
+if($('onboardSkip'))$('onboardSkip').onclick=()=>hideOnboarding(true);
 renderAuthAccounts();
 if($('settingsSaveName'))$('settingsSaveName').onclick=()=>{
   if(!currentUser)return;
@@ -1069,9 +1261,21 @@ document.querySelectorAll('.set-fmt').forEach(b=>b.onclick=()=>{
 });
 // Restore session
 (function initAuth(){
-  const s=getSession();
-  if(s){const u=loadAccounts().find(a=>a.id===s.id);if(u){currentUser=u;showAuth(false);refreshSettingsUI();return}}
-  showAuth(true);
+  try{
+    const s=getSession();
+    if(s){
+      const u=loadAccounts().find(a=>a.id===s.id);
+      if(u){
+        currentUser=u;
+        showAuth(false);
+        try{refreshSettingsUI()}catch(e){}
+        return;
+      }
+    }
+    showAuth(true);
+  }catch(e){
+    try{showAuth(true)}catch(_){}
+  }
 })();
 
 const RECENTS_KEY='pressed_recents_v1';
@@ -1100,7 +1304,7 @@ function formatCreditLine(){
   if(creditFmt==='dash')return `${main} — ${sub.toUpperCase()}`;
   return `${main}, "${sub.toUpperCase()}"`;
 }
-let brandStamp=(()=>{try{return localStorage.getItem('pressed_brand_v1')||'PRESSED.'}catch(e){return 'PRESSED.'}})();
+
 const APP={view:'create',pendingCollectionId:null};
 const BAR={square:135,portrait:170,story:190,landscape:100};
 const state={fontSize:42,lineSpace:1.2,darkness:.35,blur:0,brightness:1,font:'Playfair Display',grain:0,vignette:0,leak:0,leakColor:'#ff6b35'};
