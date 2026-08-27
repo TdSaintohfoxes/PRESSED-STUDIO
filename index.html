@@ -96,7 +96,24 @@ body.show-m-actions .app{padding-bottom:calc(150px + env(safe-area-inset-bottom,
 .m-actions .btn{flex:1;min-height:46px;font-size:13px;min-width:0;padding:10px 8px;border-radius:12px;font-weight:700}
 .desktop-actions,.preview-actions{display:none!important}
 /* Content padding */
-#view-create,#view-lookbook,#view-daily,#view-library,#view-moods,#view-collections{padding:12px 14px 8px}
+#view-create,#view-lookbook,#view-daily,#view-library,#view-moods,#view-collections,#view-settings{padding:12px 14px 8px}
+.auth-screen{position:fixed;inset:0;z-index:200;background:#07090e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;overflow-y:auto}
+.auth-screen.hidden{display:none!important}
+.auth-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px}
+.auth-brand{font:700 28px 'Playfair Display',serif;text-align:center;margin:0 0 6px;letter-spacing:-.5px}
+.auth-sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
+.auth-tabs{display:flex;gap:6px;margin-bottom:18px;background:#0d111c;border-radius:12px;padding:4px}
+.auth-tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:10px;font:600 13px Inter,sans-serif;cursor:pointer}
+.auth-tabs button.active{background:var(--accent);color:#071019}
+.auth-card label{margin-top:12px}
+.auth-card .btn{width:100%;margin-top:16px;min-height:46px}
+.auth-err{color:#ff8f99;font-size:12px;margin-top:10px;min-height:16px}
+.auth-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.4;text-align:center}
+.settings-list{display:flex;flex-direction:column;gap:10px;max-width:520px;margin:0 auto}
+.settings-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.settings-row h4{margin:0 0 4px;font:600 14px Inter,sans-serif}
+.settings-row p{margin:0;font-size:12px;color:var(--muted)}
+.settings-row .btn{margin-top:12px}
 .quickstart{display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;overflow-y:hidden;padding:8px 4px;margin:0 0 12px;border:0;border-radius:0;background:transparent;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
 .quickstart::-webkit-scrollbar{display:none}
 .quickstart .btn{flex:0 0 auto!important;min-width:0!important;width:auto!important;white-space:nowrap;padding:9px 14px;font-size:12px;min-height:40px;border-radius:999px;background:#121a2c;border-color:var(--line)}
@@ -349,7 +366,36 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 <meta name="theme-color" content="#0a0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-</head><body><div class="app">
+</head><body>
+<div class="auth-screen" id="authScreen">
+<div class="auth-card">
+<div class="auth-brand">PRESSED.</div>
+<p class="auth-sub">Your visual culture studio</p>
+<div class="auth-tabs">
+<button type="button" class="active" id="authTabLogin">Log in</button>
+<button type="button" id="authTabSignup">Sign up</button>
+</div>
+<div id="authLoginPane">
+<label>Username or email</label>
+<input id="loginUser" type="text" autocomplete="username" placeholder="you">
+<label>Password</label>
+<input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
+<button class="btn primary" id="loginBtn" type="button">Log in</button>
+</div>
+<div id="authSignupPane" class="hidden">
+<label>Display name</label>
+<input id="signupName" type="text" autocomplete="name" placeholder="Your name">
+<label>Username</label>
+<input id="signupUser" type="text" autocomplete="username" placeholder="unique name">
+<label>Password</label>
+<input id="signupPass" type="password" autocomplete="new-password" placeholder="At least 4 characters">
+<button class="btn primary" id="signupBtn" type="button">Create account</button>
+</div>
+<div class="auth-err" id="authErr"></div>
+<p class="auth-note">Accounts are stored on this device only (no cloud yet). Each account has its own Saved projects and settings.</p>
+</div>
+</div>
+<div class="app" id="appShell">
 
 <div class="install-banner" id="installBanner">
 <span>Install PRESSED on your phone for a smoother, app-like experience.</span>
@@ -363,6 +409,7 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 <button class="navbtn" data-view="lookbook" type="button"><span class="navico" aria-hidden="true">◈</span><span class="navlbl">Looks</span></button>
 <button class="navbtn" data-view="daily" type="button"><span class="navico" aria-hidden="true">◎</span><span class="navlbl">Daily</span></button>
 <button class="navbtn" data-view="library" type="button"><span class="navico" aria-hidden="true">▢</span><span class="navlbl">Saved</span></button>
+<button class="navbtn" data-view="settings" type="button"><span class="navico" aria-hidden="true">⚙</span><span class="navlbl">Settings</span></button>
 </nav>
 
 <!-- ===== CREATE ===== -->
@@ -754,6 +801,46 @@ Everybody needs you</textarea></div>
 <div class="lib-grid" id="libGrid"></div>
 </section>
 
+<!-- ===== SETTINGS ===== -->
+<section id="view-settings" class="view">
+<div class="saved-head"><h2 class="daily-title">Settings</h2></div>
+<div class="settings-list">
+<div class="settings-row">
+<h4>Account</h4>
+<p id="settingsAccountLine">Not signed in</p>
+</div>
+<div class="settings-row">
+<h4>Display name</h4>
+<p>Shown only on this device</p>
+<input id="settingsName" type="text" placeholder="Your name" style="margin-top:10px">
+<button class="btn secondary" id="settingsSaveName" type="button">Save name</button>
+</div>
+<div class="settings-row">
+<h4>Default export</h4>
+<p>Preferred format when you open Create</p>
+<div class="triple" style="margin-top:10px">
+<button type="button" class="preset set-fmt" data-fmt="square">Square</button>
+<button type="button" class="preset set-fmt" data-fmt="portrait">Portrait</button>
+<button type="button" class="preset set-fmt" data-fmt="story">Story</button>
+</div>
+</div>
+<div class="settings-row">
+<h4>About PRESSED</h4>
+<p>Lyric cards · film looks · quotes. Version 15 · GitHub Pages</p>
+</div>
+<div class="settings-row">
+<h4>Sign out</h4>
+<p>Returns to the login screen. Your projects stay on this device.</p>
+<button class="btn secondary" id="settingsSignOut" type="button">Sign out</button>
+</div>
+<div class="settings-row">
+<h4>Delete account</h4>
+<p>Removes this account and its saved projects from this device. Cannot be undone.</p>
+<button class="btn danger" id="settingsDeleteAcct" type="button">Delete account</button>
+</div>
+</div>
+</section>
+
 </div>
 
 <div class="carousel-ov" id="carouselOv"><button class="btn danger carousel-close" id="carouselClose">✕</button><div class="carousel-stage"><img id="carouselImg" alt=""></div><div class="carousel-ctl"><button class="btn" id="carPrev">‹</button><span class="carousel-count" id="carCount">1 / 1</span><button class="btn" id="carNext">›</button></div></div>
@@ -767,9 +854,107 @@ let freeLayout=false,selectedLayer='main',layerOrder=['main','caption','credit']
 let layerPos={main:{nx:0.5,ny:0.42},caption:{nx:0.5,ny:0.72},credit:{nx:0.08,ny:0.9}};
 let layerVis={main:true,caption:true,credit:true};
 let hitMap=[],drag=null; // drag:{id,startX,startY,origNx,origNy}
+
+/* ===== Accounts (on-device) ===== */
+const ACCTS_KEY='pressed_accounts_v1',SESSION_KEY='pressed_session_v1';
+let currentUser=null;
+async function hashPass(p){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('pressed|'+p));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function loadAccounts(){try{return JSON.parse(localStorage.getItem(ACCTS_KEY)||'[]')}catch(e){return[]}}
+function saveAccounts(arr){try{localStorage.setItem(ACCTS_KEY,JSON.stringify(arr))}catch(e){toast('Storage full')}}
+function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}}
+function setSession(u){if(u)localStorage.setItem(SESSION_KEY,JSON.stringify({id:u.id,user:u.user,name:u.name}));else localStorage.removeItem(SESSION_KEY)}
+function acctKey(base){return currentUser?base+'__'+currentUser.id:base}
+function showAuth(on){
+  const a=$('authScreen'),app=$('appShell');
+  if(a)a.classList.toggle('hidden',!on);
+  if(app)app.style.visibility=on?'hidden':'visible';
+  document.body.classList.toggle('authed-out',!!on);
+}
+function setAuthErr(msg){const e=$('authErr');if(e)e.textContent=msg||''}
+function refreshSettingsUI(){
+  if(!currentUser)return;
+  if($('settingsAccountLine'))$('settingsAccountLine').textContent='@'+currentUser.user+(currentUser.name?' · '+currentUser.name:'');
+  if($('settingsName'))$('settingsName').value=currentUser.name||'';
+  document.querySelectorAll('.set-fmt').forEach(b=>b.classList.toggle('active',b.dataset.fmt===(currentUser.settings&&currentUser.settings.defaultFormat||'square')));
+}
+async function doSignup(){
+  setAuthErr('');
+  const name=($('signupName').value||'').trim(),user=($('signupUser').value||'').trim().toLowerCase(),pass=$('signupPass').value||'';
+  if(!user||user.length<2)return setAuthErr('Username needs at least 2 characters');
+  if(pass.length<4)return setAuthErr('Password needs at least 4 characters');
+  const arr=loadAccounts();
+  if(arr.some(a=>a.user===user))return setAuthErr('That username is taken on this device');
+  const hash=await hashPass(pass);
+  const u={id:'u'+Date.now(),user,name:name||user,hash,createdAt:Date.now(),settings:{defaultFormat:'square'}};
+  arr.push(u);saveAccounts(arr);currentUser=u;setSession(u);showAuth(false);refreshSettingsUI();
+  if(u.settings.defaultFormat){format=u.settings.defaultFormat;try{document.querySelectorAll('.format').forEach(x=>x.classList.toggle('active',x.dataset.format===format))}catch(e){}resizeCanvas&&resizeCanvas();draw&&draw()}
+  toast('Welcome, '+(u.name||u.user));
+}
+async function doLogin(){
+  setAuthErr('');
+  const user=($('loginUser').value||'').trim().toLowerCase(),pass=$('loginPass').value||'';
+  if(!user||!pass)return setAuthErr('Enter username and password');
+  const arr=loadAccounts();const u=arr.find(a=>a.user===user);
+  if(!u)return setAuthErr('No account with that username');
+  const hash=await hashPass(pass);
+  if(hash!==u.hash)return setAuthErr('Wrong password');
+  currentUser=u;setSession(u);showAuth(false);refreshSettingsUI();
+  if(u.settings&&u.settings.defaultFormat){format=u.settings.defaultFormat}
+  try{renderLibrary()}catch(e){}
+  toast('Welcome back');
+}
+function signOut(){currentUser=null;setSession(null);showAuth(true);setAuthErr('');toast('Signed out')}
+function deleteAccount(){
+  if(!currentUser)return;
+  if(!confirm('Delete @'+currentUser.user+' and all its saved projects on this device?'))return;
+  const id=currentUser.id;
+  saveAccounts(loadAccounts().filter(a=>a.id!==id));
+  try{localStorage.removeItem('pressed_library_v1__'+id);localStorage.removeItem('pressed_collections_v1__'+id);localStorage.removeItem('pressed_draft_v2__'+id)}catch(e){}
+  signOut();toast('Account deleted');
+}
+// Wire auth UI
+if($('authTabLogin'))$('authTabLogin').onclick=()=>{
+  $('authTabLogin').classList.add('active');$('authTabSignup').classList.remove('active');
+  $('authLoginPane').classList.remove('hidden');$('authSignupPane').classList.add('hidden');setAuthErr('');
+};
+if($('authTabSignup'))$('authTabSignup').onclick=()=>{
+  $('authTabSignup').classList.add('active');$('authTabLogin').classList.remove('active');
+  $('authSignupPane').classList.remove('hidden');$('authLoginPane').classList.add('hidden');setAuthErr('');
+};
+if($('loginBtn'))$('loginBtn').onclick=()=>doLogin();
+if($('signupBtn'))$('signupBtn').onclick=()=>doSignup();
+if($('loginPass'))$('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+if($('signupPass'))$('signupPass').addEventListener('keydown',e=>{if(e.key==='Enter')doSignup()});
+if($('settingsSignOut'))$('settingsSignOut').onclick=signOut;
+if($('settingsDeleteAcct'))$('settingsDeleteAcct').onclick=deleteAccount;
+if($('settingsSaveName'))$('settingsSaveName').onclick=()=>{
+  if(!currentUser)return;
+  const name=($('settingsName').value||'').trim();
+  currentUser.name=name;const arr=loadAccounts();const i=arr.findIndex(a=>a.id===currentUser.id);
+  if(i>=0){arr[i].name=name;saveAccounts(arr)}setSession(currentUser);refreshSettingsUI();toast('Name saved');
+};
+document.querySelectorAll('.set-fmt').forEach(b=>b.onclick=()=>{
+  if(!currentUser)return;
+  currentUser.settings=currentUser.settings||{};currentUser.settings.defaultFormat=b.dataset.fmt;
+  const arr=loadAccounts();const i=arr.findIndex(a=>a.id===currentUser.id);
+  if(i>=0){arr[i].settings=currentUser.settings;saveAccounts(arr)}
+  format=b.dataset.fmt;document.querySelectorAll('.set-fmt').forEach(x=>x.classList.toggle('active',x===b));
+  try{document.querySelectorAll('.format').forEach(x=>x.classList.toggle('active',x.dataset.format===format));resizeCanvas();draw()}catch(e){}
+  toast('Default format: '+b.dataset.fmt);
+});
+// Restore session
+(function initAuth(){
+  const s=getSession();
+  if(s){const u=loadAccounts().find(a=>a.id===s.id);if(u){currentUser=u;showAuth(false);refreshSettingsUI();return}}
+  showAuth(true);
+})();
+
 const RECENTS_KEY='pressed_recents_v1';
-function loadRecents(){try{return JSON.parse(localStorage.getItem(RECENTS_KEY)||'[]')}catch(e){return[]}}
-function saveRecents(arr){try{localStorage.setItem(RECENTS_KEY,JSON.stringify(arr.slice(0,6)))}catch(e){}}
+function loadRecents(){try{return JSON.parse(localStorage.getItem(acctKey(RECENTS_KEY))||localStorage.getItem(RECENTS_KEY)||'[]')}catch(e){return[]}}
+function saveRecents(arr){try{localStorage.setItem(acctKey(RECENTS_KEY),JSON.stringify(arr.slice(0,6)))}catch(e){}}
 function pushRecent(){
   const r={template,font:state.font,filmGrade,treatment,textColor,highlight,label:(TPL_META[template]?TPL_META[template].name:template)+' · '+state.font.split(' ')[0]};
   let arr=loadRecents().filter(x=>x.label!==r.label);arr.unshift(r);saveRecents(arr);renderRecents();
@@ -2187,6 +2372,7 @@ function showView(name){
   if(name==='library')renderLibrary();
   if(name==='collections')renderCollections();
   if(name==='lookbook'&&typeof renderLookbook==='function')renderLookbook();
+  if(name==='settings')refreshSettingsUI();
   // Scroll to top when switching views on mobile
   try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}
 }
@@ -2366,9 +2552,9 @@ $('surpriseBtn').onclick=()=>{if(APP.view!=='create')showView('create');surprise
 // ============================================================
 // LIBRARY — localStorage-backed saved projects
 // ============================================================
-const LIB_KEY='pressed_library_v1',MAX_LIB=LOW_MEM?12:20;
-function loadLib(){try{return JSON.parse(localStorage.getItem(LIB_KEY)||'[]')}catch(e){return[]}}
-function saveLib(arr){try{localStorage.setItem(LIB_KEY,JSON.stringify(arr))}catch(e){toast('Could not save — storage is full.')}}
+const LIB_KEY_BASE='pressed_library_v1',MAX_LIB=LOW_MEM?12:20;
+function loadLib(){try{return JSON.parse(localStorage.getItem(acctKey(LIB_KEY_BASE))||(!currentUser&&localStorage.getItem(LIB_KEY_BASE))||'[]')}catch(e){return[]}}
+function saveLib(arr){try{localStorage.setItem(acctKey(LIB_KEY_BASE),JSON.stringify(arr))}catch(e){toast('Could not save — storage is full.')}}
 function escapeHtml(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function makePreview(){drawImmediate();const w=LOW_MEM?240:320,h=Math.round(w*(LH/LW));const oc=document.createElement('canvas');oc.width=w;oc.height=h;oc.getContext('2d').drawImage(canvas,0,0,w,h);return oc.toDataURL('image/jpeg',0.72)}
 function shrinkImage(im,maxDim){return new Promise(resolve=>{const cap=LOW_MEM?Math.min(maxDim,720):maxDim;const s=Math.min(1,cap/Math.max(im.width,im.height));const oc=document.createElement('canvas');oc.width=Math.round(im.width*s);oc.height=Math.round(im.height*s);oc.getContext('2d').drawImage(im,0,0,oc.width,oc.height);resolve(oc.toDataURL('image/jpeg',0.7))})}
@@ -2432,9 +2618,9 @@ async function exportLibraryProject(id){const p=loadLib().find(x=>x.id===id);if(
 // ============================================================
 // COLLECTIONS — ordered sets of Library project IDs
 // ============================================================
-const COLL_KEY='pressed_collections_v1';
-function loadColl(){try{return JSON.parse(localStorage.getItem(COLL_KEY)||'[]')}catch(e){return[]}}
-function saveColl(arr){try{localStorage.setItem(COLL_KEY,JSON.stringify(arr))}catch(e){toast('Could not save collection — storage is full.')}}
+const COLL_KEY_BASE='pressed_collections_v1';
+function loadColl(){try{return JSON.parse(localStorage.getItem(acctKey(COLL_KEY_BASE))||(!currentUser&&localStorage.getItem(COLL_KEY_BASE))||'[]')}catch(e){return[]}}
+function saveColl(arr){try{localStorage.setItem(acctKey(COLL_KEY_BASE),JSON.stringify(arr))}catch(e){toast('Could not save collection — storage is full.')}}
 function renderCollections(){
   $('collectionDetail').classList.add('hidden');$('collectionsList').classList.remove('hidden');
   const arr=loadColl();const box=$('collGrid');box.innerHTML='';
@@ -2534,11 +2720,12 @@ $('collExportZip').onclick=async()=>{
 // those were never global, so none of this ever actually ran. Moved inside the
 // main closure where it has real access to draw/applyConfig/currentConfig.)
 // ============================================================
-const DRAFT_KEY='pressed_draft_v1';
+const DRAFT_KEY_BASE='pressed_draft_v1';
+function DRAFT_KEY(){return acctKey(DRAFT_KEY_BASE)}
 let pHistory=[],pFuture=[],pApplying=false,pLastSig='',pTimer=null,pNoteTimer=null;
 function pSnapshot(){try{return JSON.stringify(currentConfig())}catch(e){return ''}}
 function pNoteSaved(){const el=$('saveIndicator');if(!el)return;el.classList.add('show');clearTimeout(pNoteTimer);pNoteTimer=setTimeout(()=>el.classList.remove('show'),1400)}
-function pPushHistory(){if(pApplying)return;const sig=pSnapshot();if(!sig||sig===pLastSig)return;pHistory.push(sig);if(pHistory.length>(LOW_MEM?10:18))pHistory.shift();pFuture=[];pLastSig=sig;try{localStorage.setItem(DRAFT_KEY,sig)}catch(e){}pNoteSaved()}
+function pPushHistory(){if(pApplying)return;const sig=pSnapshot();if(!sig||sig===pLastSig)return;pHistory.push(sig);if(pHistory.length>(LOW_MEM?10:18))pHistory.shift();pFuture=[];pLastSig=sig;try{localStorage.setItem(DRAFT_KEY(),sig)}catch(e){}pNoteSaved()}
 function pScheduleHistory(){clearTimeout(pTimer);pTimer=setTimeout(pPushHistory,LOW_MEM?700:450)}
 function pRestore(sig,msg){try{pApplying=true;applyConfig(JSON.parse(sig));draw();pLastSig=sig;if(msg)toast(msg)}finally{setTimeout(()=>pApplying=false,0)}}
 function undoHistory(){if(pHistory.length<2)return toast('Nothing to undo');const cur=pHistory.pop();pFuture.push(cur);pRestore(pHistory[pHistory.length-1],'Undone')}
@@ -2554,7 +2741,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Escape'){if($('carouselOv').classList.contains('show'))$('carouselClose').click()}
 });
 (function initDraft(){
-  const draft=localStorage.getItem(DRAFT_KEY);
+  const draft=localStorage.getItem(DRAFT_KEY());
   if(draft){
     pHistory=[draft];pLastSig=draft;
     const cur=pSnapshot();
@@ -2563,7 +2750,7 @@ document.addEventListener('keydown',e=>{
       if(bar){
         bar.classList.remove('hidden');
         if($('resumeYes'))$('resumeYes').onclick=()=>{pRestore(draft,'Resumed last card ✓');bar.classList.add('hidden');updateCreditPreview();updateEmptyGuide()};
-        if($('resumeNo'))$('resumeNo').onclick=()=>{bar.classList.add('hidden');try{localStorage.removeItem(DRAFT_KEY)}catch(e){};pPushHistory()};
+        if($('resumeNo'))$('resumeNo').onclick=()=>{bar.classList.add('hidden');try{localStorage.removeItem(DRAFT_KEY())}catch(e){};pPushHistory()};
       }else{
         setTimeout(()=>{if(confirm('Restore your last unsaved PRESSED draft?'))pRestore(draft,'Draft restored ✓')},400);
       }
