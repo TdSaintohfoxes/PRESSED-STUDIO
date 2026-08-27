@@ -96,24 +96,53 @@ body.show-m-actions .app{padding-bottom:calc(150px + env(safe-area-inset-bottom,
 .m-actions .btn{flex:1;min-height:46px;font-size:13px;min-width:0;padding:10px 8px;border-radius:12px;font-weight:700}
 .desktop-actions,.preview-actions{display:none!important}
 /* Content padding */
-#view-create,#view-lookbook,#view-daily,#view-library,#view-moods,#view-collections,#view-settings{padding:12px 14px 8px}
-.auth-screen{position:fixed;inset:0;z-index:200;background:#07090e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;overflow-y:auto}
+#view-create,#view-lookbook,#view-daily,#view-library,#view-moods,#view-collections,#view-settings,#view-account{padding:12px 14px 8px}
+.auth-screen{position:fixed;inset:0;z-index:200;background:#07090e;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto}
 .auth-screen.hidden{display:none!important}
-.auth-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px}
-.auth-brand{font:700 28px 'Playfair Display',serif;text-align:center;margin:0 0 6px;letter-spacing:-.5px}
-.auth-sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
-.auth-tabs{display:flex;gap:6px;margin-bottom:18px;background:#0d111c;border-radius:12px;padding:4px}
-.auth-tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:10px;font:600 13px Inter,sans-serif;cursor:pointer}
+.auth-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(79,157,255,.18),transparent 55%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(111,143,184,.08),transparent 50%);pointer-events:none}
+.auth-card{position:relative;width:100%;max-width:400px;background:rgba(18,26,44,.96);border:1px solid var(--line);border-radius:24px;padding:32px 24px 24px;box-shadow:0 24px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.03) inset}
+.auth-mark{width:52px;height:52px;border-radius:16px;margin:0 auto 14px;display:grid;place-items:center;background:linear-gradient(145deg,#4f9dff,#2a6fd6);font:800 22px 'Playfair Display',serif;color:#071019;letter-spacing:-1px;box-shadow:0 10px 28px rgba(79,157,255,.35)}
+.auth-brand{font:700 28px 'Playfair Display',serif;text-align:center;margin:0 0 4px;letter-spacing:-.5px}
+.auth-sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 20px;line-height:1.4}
+.auth-tabs{display:flex;gap:4px;margin-bottom:20px;background:#0d111c;border-radius:14px;padding:4px;border:1px solid rgba(42,53,80,.6)}
+.auth-tabs button{flex:1;border:0;background:transparent;color:var(--muted);padding:11px 10px;border-radius:11px;font:600 13px Inter,sans-serif;cursor:pointer;transition:background .15s,color .15s,transform .12s}
 .auth-tabs button.active{background:var(--accent);color:#071019}
-.auth-card label{margin-top:12px}
-.auth-card .btn{width:100%;margin-top:16px;min-height:46px}
-.auth-err{color:#ff8f99;font-size:12px;margin-top:10px;min-height:16px}
-.auth-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.4;text-align:center}
-.settings-list{display:flex;flex-direction:column;gap:10px;max-width:520px;margin:0 auto}
-.settings-row{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.settings-row h4{margin:0 0 4px;font:600 14px Inter,sans-serif}
-.settings-row p{margin:0;font-size:12px;color:var(--muted)}
-.settings-row .btn{margin-top:12px}
+.auth-tabs button:active{transform:scale(.97)}
+.auth-card label{margin-top:14px;display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:7px}
+.auth-card input[type=text],.auth-card input[type=password]{width:100%;background:#0d111c;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:13px 14px;font:14px Inter,sans-serif;transition:border-color .15s,box-shadow .15s}
+.auth-card input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,157,255,.18)}
+.auth-pass-wrap{position:relative}
+.auth-pass-wrap input{padding-right:48px}
+.auth-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--muted);font:600 11px Inter,sans-serif;padding:8px 10px;cursor:pointer;border-radius:8px}
+.auth-eye:active{color:var(--text)}
+.auth-card .btn{width:100%;margin-top:18px;min-height:48px;font-size:14px;border-radius:12px}
+.auth-err{color:#ff8f99;font-size:12px;margin-top:12px;min-height:18px;text-align:center;line-height:1.35}
+.auth-note{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.45;text-align:center}
+.auth-guest{margin-top:12px;width:100%;min-height:42px;font-size:12px}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0 4px;color:var(--muted);font-size:11px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+.auth-accounts{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.auth-acct-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0d111c;color:var(--text);cursor:pointer;font:600 13px Inter,sans-serif}
+.auth-acct-btn:active{transform:scale(.98)}
+.auth-acct-av{width:36px;height:36px;border-radius:10px;background:linear-gradient(145deg,#4f9dff,#2a6fd6);display:grid;place-items:center;font:800 14px Inter,sans-serif;color:#071019;flex-shrink:0}
+.auth-acct-meta{flex:1;min-width:0}
+.auth-acct-meta span{display:block;font:500 11px Inter,sans-serif;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Account page */
+.settings-list,.account-list{display:flex;flex-direction:column;gap:12px;max-width:520px;margin:0 auto}
+.settings-row,.account-row{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 16px}
+.settings-row h4,.account-row h4{margin:0 0 4px;font:600 14px Inter,sans-serif}
+.settings-row p,.account-row p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+.settings-row .btn,.account-row .btn{margin-top:12px}
+.account-hero{display:flex;align-items:center;gap:16px;padding:20px 18px;background:linear-gradient(135deg,rgba(79,157,255,.12),rgba(18,26,44,.95));border:1px solid var(--line);border-radius:18px;margin-bottom:4px}
+.account-av{width:64px;height:64px;border-radius:18px;background:linear-gradient(145deg,#4f9dff,#2a6fd6);display:grid;place-items:center;font:800 24px 'Playfair Display',serif;color:#071019;flex-shrink:0;box-shadow:0 8px 24px rgba(79,157,255,.3)}
+.account-hero-text{flex:1;min-width:0}
+.account-hero-text h3{margin:0 0 4px;font:700 18px Inter,sans-serif;letter-spacing:-.2px}
+.account-hero-text p{margin:0;font-size:12px;color:var(--muted)}
+.account-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px}
+.account-stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 12px;text-align:center}
+.account-stat b{display:block;font:700 18px Inter,sans-serif;color:var(--text);margin-bottom:2px}
+.account-stat span{font:500 10px Inter,sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.account-section-label{font:700 10px Inter,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent);margin:8px 0 0}
 .quickstart{display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;overflow-y:hidden;padding:8px 4px;margin:0 0 12px;border:0;border-radius:0;background:transparent;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
 .quickstart::-webkit-scrollbar{display:none}
 .quickstart .btn{flex:0 0 auto!important;min-width:0!important;width:auto!important;white-space:nowrap;padding:9px 14px;font-size:12px;min-height:40px;border-radius:999px;background:#121a2c;border-color:var(--line)}
@@ -369,30 +398,42 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 </head><body>
 <div class="auth-screen" id="authScreen">
 <div class="auth-card">
+<div class="auth-mark">P</div>
 <div class="auth-brand">PRESSED.</div>
-<p class="auth-sub">Your visual culture studio</p>
+<p class="auth-sub">Make lyric cards, film looks &amp; quotes — private to this device.</p>
 <div class="auth-tabs">
 <button type="button" class="active" id="authTabLogin">Log in</button>
 <button type="button" id="authTabSignup">Sign up</button>
 </div>
 <div id="authLoginPane">
-<label>Username or email</label>
-<input id="loginUser" type="text" autocomplete="username" placeholder="you">
-<label>Password</label>
-<input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
+<label for="loginUser">Username</label>
+<input id="loginUser" type="text" autocomplete="username" placeholder="your username" enterkeyhint="next">
+<label for="loginPass">Password</label>
+<div class="auth-pass-wrap">
+<input id="loginPass" type="password" autocomplete="current-password" placeholder="Your password" enterkeyhint="go">
+<button type="button" class="auth-eye" id="loginEye" aria-label="Show password">Show</button>
+</div>
 <button class="btn primary" id="loginBtn" type="button">Log in</button>
 </div>
 <div id="authSignupPane" class="hidden">
-<label>Display name</label>
-<input id="signupName" type="text" autocomplete="name" placeholder="Your name">
-<label>Username</label>
-<input id="signupUser" type="text" autocomplete="username" placeholder="unique name">
-<label>Password</label>
-<input id="signupPass" type="password" autocomplete="new-password" placeholder="At least 4 characters">
+<label for="signupName">Display name</label>
+<input id="signupName" type="text" autocomplete="name" placeholder="How we greet you" enterkeyhint="next">
+<label for="signupUser">Username</label>
+<input id="signupUser" type="text" autocomplete="username" placeholder="unique on this device" enterkeyhint="next">
+<label for="signupPass">Password</label>
+<div class="auth-pass-wrap">
+<input id="signupPass" type="password" autocomplete="new-password" placeholder="At least 4 characters" enterkeyhint="go">
+<button type="button" class="auth-eye" id="signupEye" aria-label="Show password">Show</button>
+</div>
 <button class="btn primary" id="signupBtn" type="button">Create account</button>
 </div>
 <div class="auth-err" id="authErr"></div>
-<p class="auth-note">Accounts are stored on this device only (no cloud yet). Each account has its own Saved projects and settings.</p>
+<div id="authAccountsWrap" class="hidden">
+<div class="auth-divider">Accounts on this device</div>
+<div class="auth-accounts" id="authAccountsList"></div>
+</div>
+<button type="button" class="btn secondary auth-guest" id="guestBtn">Continue as guest</button>
+<p class="auth-note">Accounts live only on this phone or laptop. No cloud, no tracking. Each account keeps its own Saved projects.</p>
 </div>
 </div>
 <div class="app" id="appShell">
@@ -409,7 +450,7 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 <button class="navbtn" data-view="lookbook" type="button"><span class="navico" aria-hidden="true">◈</span><span class="navlbl">Looks</span></button>
 <button class="navbtn" data-view="daily" type="button"><span class="navico" aria-hidden="true">◎</span><span class="navlbl">Daily</span></button>
 <button class="navbtn" data-view="library" type="button"><span class="navico" aria-hidden="true">▢</span><span class="navlbl">Saved</span></button>
-<button class="navbtn" data-view="settings" type="button"><span class="navico" aria-hidden="true">⚙</span><span class="navlbl">Settings</span></button>
+<button class="navbtn" data-view="account" type="button"><span class="navico" aria-hidden="true">◉</span><span class="navlbl">Account</span></button>
 </nav>
 
 <!-- ===== CREATE ===== -->
@@ -801,39 +842,61 @@ Everybody needs you</textarea></div>
 <div class="lib-grid" id="libGrid"></div>
 </section>
 
-<!-- ===== SETTINGS ===== -->
-<section id="view-settings" class="view">
-<div class="saved-head"><h2 class="daily-title">Settings</h2></div>
-<div class="settings-list">
-<div class="settings-row">
-<h4>Account</h4>
-<p id="settingsAccountLine">Not signed in</p>
+<!-- ===== ACCOUNT ===== -->
+<section id="view-account" class="view">
+<div class="saved-head"><h2 class="daily-title">Account</h2></div>
+<div class="account-list">
+<div class="account-hero" id="accountHero">
+<div class="account-av" id="accountAv">P</div>
+<div class="account-hero-text">
+<h3 id="accountDisplayName">Guest</h3>
+<p id="accountHandle">Not signed in · local only</p>
 </div>
-<div class="settings-row">
+</div>
+<div class="account-stats">
+<div class="account-stat"><b id="statSaved">0</b><span>Saved</span></div>
+<div class="account-stat"><b id="statColls">0</b><span>Collections</span></div>
+<div class="account-stat"><b id="statDays">—</b><span>Since</span></div>
+</div>
+
+<p class="account-section-label">Profile</p>
+<div class="account-row">
 <h4>Display name</h4>
-<p>Shown only on this device</p>
+<p>How PRESSED greets you on this device</p>
 <input id="settingsName" type="text" placeholder="Your name" style="margin-top:10px">
 <button class="btn secondary" id="settingsSaveName" type="button">Save name</button>
 </div>
-<div class="settings-row">
+
+<p class="account-section-label">Preferences</p>
+<div class="account-row">
 <h4>Default export</h4>
-<p>Preferred format when you open Create</p>
+<p>Preferred canvas size when you open Create</p>
 <div class="triple" style="margin-top:10px">
 <button type="button" class="preset set-fmt" data-fmt="square">Square</button>
 <button type="button" class="preset set-fmt" data-fmt="portrait">Portrait</button>
 <button type="button" class="preset set-fmt" data-fmt="story">Story</button>
 </div>
 </div>
-<div class="settings-row">
-<h4>About PRESSED</h4>
-<p>Lyric cards · film looks · quotes. Version 15 · GitHub Pages</p>
+<div class="account-row">
+<h4>Brand stamp</h4>
+<p>Small credit mark on every card</p>
+<input id="accountBrandStamp" type="text" placeholder="PRESSED." style="margin-top:10px">
+<button class="btn secondary" id="accountSaveStamp" type="button">Save stamp</button>
 </div>
-<div class="settings-row">
-<h4>Sign out</h4>
-<p>Returns to the login screen. Your projects stay on this device.</p>
+
+<p class="account-section-label">About</p>
+<div class="account-row">
+<h4>PRESSED Studio</h4>
+<p>Lyric cards · film looks · quotes. Version 16 · on-device accounts · GitHub Pages</p>
+</div>
+
+<p class="account-section-label">Session</p>
+<div class="account-row">
+<h4>Switch account</h4>
+<p>Log out and choose another account on this device</p>
 <button class="btn secondary" id="settingsSignOut" type="button">Sign out</button>
 </div>
-<div class="settings-row">
+<div class="account-row">
 <h4>Delete account</h4>
 <p>Removes this account and its saved projects from this device. Cannot be undone.</p>
 <button class="btn danger" id="settingsDeleteAcct" type="button">Delete account</button>
@@ -872,13 +935,59 @@ function showAuth(on){
   if(a)a.classList.toggle('hidden',!on);
   if(app)app.style.visibility=on?'hidden':'visible';
   document.body.classList.toggle('authed-out',!!on);
+  if(on){try{renderAuthAccounts()}catch(e){}}
 }
 function setAuthErr(msg){const e=$('authErr');if(e)e.textContent=msg||''}
 function refreshSettingsUI(){
-  if(!currentUser)return;
-  if($('settingsAccountLine'))$('settingsAccountLine').textContent='@'+currentUser.user+(currentUser.name?' · '+currentUser.name:'');
-  if($('settingsName'))$('settingsName').value=currentUser.name||'';
-  document.querySelectorAll('.set-fmt').forEach(b=>b.classList.toggle('active',b.dataset.fmt===(currentUser.settings&&currentUser.settings.defaultFormat||'square')));
+  const name=currentUser?(currentUser.name||currentUser.user):'Guest';
+  const handle=currentUser?('@'+currentUser.user+' · this device only'):'Not signed in · local only';
+  const initial=(name||'P').trim().charAt(0).toUpperCase();
+  if($('accountDisplayName'))$('accountDisplayName').textContent=name;
+  if($('accountHandle'))$('accountHandle').textContent=handle;
+  if($('accountAv'))$('accountAv').textContent=initial;
+  if($('settingsName'))$('settingsName').value=currentUser?(currentUser.name||''):'';
+  if($('accountBrandStamp'))$('accountBrandStamp').value=brandStamp||'PRESSED.';
+  const defFmt=(currentUser&&currentUser.settings&&currentUser.settings.defaultFormat)||'square';
+  document.querySelectorAll('.set-fmt').forEach(b=>b.classList.toggle('active',b.dataset.fmt===defFmt));
+  try{
+    if($('statSaved'))$('statSaved').textContent=String(loadLib().length);
+    if($('statColls'))$('statColls').textContent=String(loadColl().length);
+    if($('statDays')){
+      if(currentUser&&currentUser.createdAt){
+        const d=new Date(currentUser.createdAt);
+        $('statDays').textContent=d.toLocaleDateString(undefined,{month:'short',year:'2-digit'});
+      }else $('statDays').textContent='—';
+    }
+  }catch(e){}
+}
+function renderAuthAccounts(){
+  const wrap=$('authAccountsWrap'),list=$('authAccountsList');
+  if(!wrap||!list)return;
+  const arr=loadAccounts();
+  if(!arr.length){wrap.classList.add('hidden');list.innerHTML='';return}
+  wrap.classList.remove('hidden');
+  list.innerHTML='';
+  arr.slice(0,5).forEach(u=>{
+    const b=document.createElement('button');b.type='button';b.className='auth-acct-btn';
+    const av=(u.name||u.user||'?').charAt(0).toUpperCase();
+    b.innerHTML=`<span class="auth-acct-av">${av}</span><span class="auth-acct-meta">${u.name||u.user}<span>@${u.user}</span></span>`;
+    b.onclick=()=>{
+      if($('loginUser'))$('loginUser').value=u.user;
+      if($('loginPass')){$('loginPass').value='';$('loginPass').focus()}
+      // switch to login tab
+      if($('authTabLogin'))$('authTabLogin').click();
+      setAuthErr('Enter password for @'+u.user);
+    };
+    list.appendChild(b);
+  });
+}
+function wirePasswordToggle(inputId,btnId){
+  const inp=$(inputId),btn=$(btnId);if(!inp||!btn)return;
+  btn.onclick=()=>{
+    const show=inp.type==='password';
+    inp.type=show?'text':'password';
+    btn.textContent=show?'Hide':'Show';
+  };
 }
 async function doSignup(){
   setAuthErr('');
@@ -930,6 +1039,19 @@ if($('loginPass'))$('loginPass').addEventListener('keydown',e=>{if(e.key==='Ente
 if($('signupPass'))$('signupPass').addEventListener('keydown',e=>{if(e.key==='Enter')doSignup()});
 if($('settingsSignOut'))$('settingsSignOut').onclick=signOut;
 if($('settingsDeleteAcct'))$('settingsDeleteAcct').onclick=deleteAccount;
+wirePasswordToggle('loginPass','loginEye');
+wirePasswordToggle('signupPass','signupEye');
+if($('guestBtn'))$('guestBtn').onclick=()=>{
+  currentUser=null;setSession(null);showAuth(false);refreshSettingsUI();
+  toast('Guest mode — projects stay on this device');
+};
+if($('accountSaveStamp'))$('accountSaveStamp').onclick=()=>{
+  const v=($('accountBrandStamp').value||'').trim()||'PRESSED.';
+  brandStamp=v;try{localStorage.setItem('pressed_brand_v1',brandStamp)}catch(e){}
+  if($('brandStamp'))$('brandStamp').value=brandStamp;
+  draw();toast('Stamp saved');
+};
+renderAuthAccounts();
 if($('settingsSaveName'))$('settingsSaveName').onclick=()=>{
   if(!currentUser)return;
   const name=($('settingsName').value||'').trim();
@@ -2372,7 +2494,7 @@ function showView(name){
   if(name==='library')renderLibrary();
   if(name==='collections')renderCollections();
   if(name==='lookbook'&&typeof renderLookbook==='function')renderLookbook();
-  if(name==='settings')refreshSettingsUI();
+  if(name==='account')refreshSettingsUI();
   // Scroll to top when switching views on mobile
   try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}
 }
