@@ -158,6 +158,24 @@ body.show-m-actions .app{padding-bottom:calc(150px + env(safe-area-inset-bottom,
 .onboard-steps span.on{background:var(--accent)}
 .onboard-card .btn{width:100%;min-height:46px;margin-top:8px}
 .backup-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
+.format-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.format-grid .preset{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px;text-align:left;min-height:56px}
+.format-grid .preset b{font:700 12px Inter,sans-serif}
+.format-grid .preset span{font:500 10px Inter,sans-serif;color:var(--muted);line-height:1.3}
+.format-cat{font:700 10px Inter,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin:12px 0 8px}
+.format-cat:first-child{margin-top:0}
+.export-tier{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.export-tier .preset{font-size:11px;padding:8px 6px}
+.export-meta{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4}
+.contrast-warn{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,180,80,.35);background:rgba(255,140,40,.1);font-size:12px;line-height:1.4}
+.contrast-warn.show{display:block}
+.contrast-warn .row{margin-top:8px;gap:8px}
+.pair-chip{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 12px;border-radius:999px;border:1px dashed var(--line);background:#100e18;font:600 11px Inter,sans-serif;color:var(--muted);cursor:pointer}
+.pair-chip:hover{border-color:var(--accent);color:var(--text)}
+.pair-chip b{color:var(--accent)}
+.share-look-box{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.share-look-box input{font-size:11px}
 .adv-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;border:1px solid var(--line);background:#100e18;color:var(--text);border-radius:10px;padding:12px 14px;font:600 12px Inter,sans-serif;cursor:pointer;margin:0}
 .adv-toggle .chev{color:var(--muted);transition:transform .2s}
 .adv-toggle.open .chev{transform:rotate(90deg)}
@@ -586,6 +604,7 @@ Everybody needs you</textarea></div>
 <div class="section"><h3>Type</h3>
 <label>Font</label>
 <div class="font-grid" id="fontGrid"></div>
+<button type="button" class="pair-chip hidden" id="pairChip">Suggested pairing: <b id="pairName">—</b></button>
 <select id="fontSelect" class="hidden" aria-hidden="true">
 <option value="Playfair Display">Playfair Display</option>
 <option value="Cormorant Garamond">Cormorant Garamond</option>
@@ -634,6 +653,10 @@ Everybody needs you</textarea></div>
 </div>
 </div>
 </div>
+<div class="contrast-warn" id="contrastWarn" role="status">
+<span id="contrastMsg">Low contrast on this photo.</span>
+<div class="row"><button type="button" class="btn primary" id="contrastFixBtn" style="min-height:36px;font-size:11px">Auto-adjust</button></div>
+</div>
 <div class="section collapsible open" data-coll="image">
 <div class="coll-head"><h3>Image</h3><span class="coll-chev">▾</span></div>
 <div class="coll-body">
@@ -675,13 +698,34 @@ Everybody needs you</textarea></div>
 <!-- ===== FRAME ZONE ===== -->
 <div class="ezone" id="zone-frame">
 <div class="section"><h3>Size</h3>
-<div class="size-grid">
-<button class="preset format active" data-format="square"><b>Feed</b><span>1:1 · IG / X</span></button>
-<button class="preset format" data-format="portrait"><b>Portrait</b><span>4:5 · IG</span></button>
-<button class="preset format" data-format="story"><b>Story</b><span>9:16 · Stories</span></button>
-<button class="preset format" data-format="landscape"><b>Wide</b><span>16:9 · Banner</span></button>
+<p class="format-cat">Social</p>
+<div class="format-grid">
+<button class="preset format active" data-format="square"><b>Feed</b><span>1:1 · 1080×1080</span></button>
+<button class="preset format" data-format="portrait"><b>Portrait</b><span>4:5 · 1080×1350</span></button>
+<button class="preset format" data-format="story"><b>Story / Reels</b><span>9:16 · 1080×1920</span></button>
+<button class="preset format" data-format="landscape"><b>Wide</b><span>16:9 · 1920×1080</span></button>
+<button class="preset format" data-format="xheader"><b>X header</b><span>3:1 · 1500×500</span></button>
+</div>
+<p class="format-cat">Wallpaper</p>
+<div class="format-grid">
+<button class="preset format" data-format="phonewall"><b>Phone</b><span>9:19.5 · 1170×2532</span></button>
+<button class="preset format" data-format="deskwall"><b>Desktop</b><span>16:9 · 1920×1080</span></button>
+</div>
+<p class="format-cat">Print</p>
+<div class="format-grid">
+<button class="preset format" data-format="a4"><b>A4 poster</b><span>1:√2 · 1240×1754</span></button>
 </div>
 <label class="chk-row" style="margin-top:12px"><input type="checkbox" id="safeGuides"> Show safe-area guides</label>
+<p class="mini" id="safeGuideHint" style="margin-top:8px">Guides adapt to the selected format (feed crop, story UI, notch/clock on phone).</p>
+<div style="margin-top:14px">
+<label>Export quality</label>
+<div class="export-tier" id="exportTier">
+<button type="button" class="preset etier active" data-tier="standard">Standard</button>
+<button type="button" class="preset etier" data-tier="high">High</button>
+<button type="button" class="preset etier" data-tier="max">Max</button>
+</div>
+<p class="export-meta" id="exportMeta">PNG ~1–3 MB · matches on-screen clarity</p>
+</div>
 </div>
 <div class="section" id="presetPosSection"><h3>Text position</h3>
 <div class="triple"><button class="preset pos active" data-pos="middle">Middle</button><button class="preset pos" data-pos="lower">Lower</button><button class="preset pos" data-pos="upper">Upper</button></div>
@@ -721,6 +765,11 @@ Everybody needs you</textarea></div>
 </div>
 </div>
 <div class="section"><div class="row"><button class="btn primary" id="renderBtn">Press card</button><button class="btn danger" id="resetBtn">Reset</button></div>
+<div class="share-look-box">
+<button type="button" class="btn secondary" id="shareLookBtn" style="width:100%">Copy shareable Look link</button>
+<input id="shareLookInput" type="text" readonly placeholder="Look code appears here" class="hidden">
+<p class="mini">Shares style only — not your photo or lyrics. Opens blank with this look applied.</p>
+</div>
 <p class="mini" style="margin-top:10px">🔒 Everything stays on your device.</p></div>
 </div>
 
@@ -1375,27 +1424,65 @@ function buildFontGrid(){
     const b=document.createElement('button');b.type='button';b.className='font-btn'+(state.font===name?' active':'');
     b.dataset.font=name;
     b.innerHTML=`<span class="fname" style="font-family:'${name}',sans-serif;font-weight:${FONT_WEIGHTS[name]}">${name}</span><span class="fmeta">${FONT_META[name]||''}</span>`;
-    b.onclick=()=>{state.font=name;$('fontSelect').value=name;box.querySelectorAll('.font-btn').forEach(x=>x.classList.toggle('active',x.dataset.font===name));draw()};
+    b.onclick=()=>{state.font=name;$('fontSelect').value=name;box.querySelectorAll('.font-btn').forEach(x=>x.classList.toggle('active',x.dataset.font===name));try{updatePairChip()}catch(e){};draw()};
     box.appendChild(b);
   });
 }
 function syncFontGrid(){const box=$('fontGrid');if(!box)return;box.querySelectorAll('.font-btn').forEach(x=>x.classList.toggle('active',x.dataset.font===state.font))}
-buildFontGrid();
+buildFontGrid();try{updatePairChip()}catch(e){}
 function readableOn(hex){const c=(hex||'#ffffff').replace('#','');const r=parseInt(c.substring(0,2),16),g=parseInt(c.substring(2,4),16),b=parseInt(c.substring(4,6),16);const lum=(0.299*r+0.587*g+0.114*b)/255;return lum>0.6?'#111111':'#ffffff'}
 // render at 2x and scale down for crisp, non-jagged text at export size
 // Lower resolution on small/weak devices to prevent tab crashes
 const IS_MOBILE=/Mobi|Android/i.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(max-width:760px)').matches);
 const LOW_MEM=(navigator.deviceMemory&&navigator.deviceMemory<=4)||IS_MOBILE;
-// Higher internal resolution = sharper text/exports; still capped on weak devices
-const RSCALE=LOW_MEM?1.75:3;let LW=900,LH=900;
-function resizeCanvas(){const DIMS={square:[900,900],portrait:[900,1125],story:[900,1600],landscape:[1200,675]};const d=DIMS[format]||DIMS.square;LW=d[0];LH=d[1];canvas.width=Math.round(LW*RSCALE);canvas.height=Math.round(LH*RSCALE);}
+// Live preview scale; export can re-render larger
+const BASE_RSCALE=LOW_MEM?1.5:2.25;let liveScale=BASE_RSCALE;let LW=900,LH=900,exportTier='standard';
+const FORMAT_META={
+  square:{label:'Feed',logical:[1080,1080],safe:{t:5,b:5,s:4},out:{standard:[1080,1080],high:[1620,1620],max:[2160,2160]}},
+  portrait:{label:'Portrait',logical:[1080,1350],safe:{t:5,b:5,s:4},out:{standard:[1080,1350],high:[1620,2025],max:[2160,2700]}},
+  story:{label:'Story',logical:[1080,1920],safe:{t:12.5,b:14,s:5},out:{standard:[1080,1920],high:[1440,2560],max:[1440,2560]}},
+  landscape:{label:'Wide',logical:[1280,720],safe:{t:6,b:6,s:4},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
+  xheader:{label:'X header',logical:[1500,500],safe:{t:8,b:8,s:3},out:{standard:[1500,500],high:[2250,750],max:[3000,1000]}},
+  phonewall:{label:'Phone',logical:[1170,2532],safe:{t:14,b:10,s:6},out:{standard:[1170,2532],high:[1170,2532],max:[1440,3116]}},
+  deskwall:{label:'Desktop',logical:[1280,720],safe:{t:4,b:4,s:3},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
+  a4:{label:'A4',logical:[1240,1754],safe:{t:6,b:6,s:5},out:{standard:[1240,1754],high:[1748,2475],max:[2480,3508]}}
+};
+function formatInfo(f){return FORMAT_META[f]||FORMAT_META.square}
+function resizeCanvas(){
+  const m=formatInfo(format);
+  LW=m.logical[0];LH=m.logical[1];
+  let scale=BASE_RSCALE;
+  const px=LW*LH*scale*scale;
+  if(LOW_MEM&&px>3.2e6)scale=Math.sqrt(3.2e6/(LW*LH));
+  if(!LOW_MEM&&px>12e6)scale=Math.sqrt(12e6/(LW*LH));
+  liveScale=scale;
+  canvas.width=Math.max(1,Math.round(LW*scale));
+  canvas.height=Math.max(1,Math.round(LH*scale));
+  try{updateExportMeta()}catch(e){}
+  try{updateSafeOverlay()}catch(e){}
+}
+function exportDims(){
+  const m=formatInfo(format);
+  let d=(m.out&&m.out[exportTier])||m.logical;
+  if(LOW_MEM&&exportTier==='max')d=m.out.high||d;
+  return d;
+}
+function updateExportMeta(){
+  const el=$('exportMeta');if(!el)return;
+  const d=exportDims();
+  const mp=((d[0]*d[1])/1e6).toFixed(1);
+  const est=exportTier==='standard'?'PNG ~1–4 MB':exportTier==='high'?'PNG ~3–10 MB':'PNG ~8–25 MB';
+  let warn=(LOW_MEM&&exportTier==='max')?' · Max limited on this device':(exportTier==='max'?' · may be slow':'');
+  el.textContent=d[0]+'×'+d[1]+' · ~'+mp+' MP · '+est+warn;
+}
+
 // Debounced draw — stops rapid slider spam from freezing the tab
 let _drawTimer=null,_drawPending=false;
 const _drawNow=()=>{_drawPending=false;_realDraw()};
 function scheduleDraw(){if(_drawPending)return;_drawPending=true;cancelAnimationFrame(_drawTimer);_drawTimer=requestAnimationFrame(_drawNow)}
 const bindRange=(id,key,out,fmt=v=>v)=>{const e=$(id);if(!e)return;const f=()=>{state[key]=key==='darkness'||key==='grain'||key==='vignette'||key==='leak'?+e.value/100:key==='brightness'?+e.value/100:key==='lineSpace'?+e.value/100:+e.value;$(out).textContent=fmt(e.value);draw()};e.oninput=f;f()};bindRange('fontSize','fontSize','fontSizeOut');bindRange('lineSpace','lineSpace','lineSpaceOut',v=>v+'%');bindRange('darkness','darkness','darknessOut');bindRange('blur','blur','blurOut');bindRange('brightness','brightness','brightnessOut');bindRange('grain','grain','grainOut');bindRange('vignette','vignette','vignetteOut');bindRange('leak','leak','leakOut');
 if($('leakColor'))$('leakColor').oninput=e=>{state.leakColor=e.target.value;draw()};
-$('fontSelect').onchange=e=>{state.font=e.target.value;syncFontGrid();draw()};['quoteText','creditMain','creditSub','album','year'].forEach(id=>$(id).oninput=draw);
+$('fontSelect').onchange=e=>{state.font=e.target.value;syncFontGrid();try{updatePairChip()}catch(err){};draw()};['quoteText','creditMain','creditSub','album','year'].forEach(id=>$(id).oninput=draw);
 $('brandStamp').value=brandStamp;
 $('brandStamp').oninput=e=>{brandStamp=e.target.value.trim()||'PRESSED.';try{localStorage.setItem('pressed_brand_v1',brandStamp)}catch(err){}draw()};
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;$('nowFields').classList.toggle('hidden',mode!=='now');draw()});
@@ -1404,13 +1491,23 @@ choose('.align','active',b=>align=b.dataset.align);
 choose('.style','active',b=>treatment=b.dataset.style);
 choose('.format','active',b=>{
   const prev=format;format=b.dataset.format;
-  // Intelligent adapt: scale type when aspect changes a lot
-  const tall={story:1,portrait:1};const wide={landscape:1};
+  const tall={story:1,portrait:1,phonewall:1,a4:1};const wide={landscape:1,xheader:1,deskwall:1};
   if(tall[format]&&!tall[prev]){state.fontSize=Math.min(56,Math.round(state.fontSize*1.05));textPos=textPos||'middle'}
   if(wide[format]&&!wide[prev]){state.fontSize=Math.max(28,Math.round(state.fontSize*0.9))}
   if($('fontSize')){$('fontSize').value=state.fontSize;$('fontSizeOut').textContent=state.fontSize}
   resizeCanvas();updateSafeOverlay();
-  toast(format==='story'?'Story format — keep text clear of top/bottom safe areas':format==='square'?'Square · feed ready':'Format updated');
+  const lab=(formatInfo(format).label)||format;
+  toast(lab+' · '+(exportDims()[0]+'×'+exportDims()[1]));
+});
+// Export quality tier
+document.querySelectorAll('.etier').forEach(btn=>{
+  btn.onclick=()=>{
+    exportTier=btn.dataset.tier||'standard';
+    document.querySelectorAll('.etier').forEach(x=>x.classList.toggle('active',x===btn));
+    updateExportMeta();
+    if(LOW_MEM&&exportTier==='max')toast('Max is capped on this device for stability');
+    else toast('Export: '+exportTier);
+  };
 });
 choose('.pos','active',b=>{textPos=b.dataset.pos;textOffset=0});
 choose('.grade','active',b=>{filmGrade=b.dataset.grade});
@@ -1443,10 +1540,20 @@ function updateSafeOverlay(){
   if(!ov){ov=document.createElement('div');ov.id='safeOverlay';ov.className='safe-overlay';
     const wrap=document.querySelector('.card-wrap');if(wrap)wrap.appendChild(ov)}
   ov.classList.toggle('show',showSafeGuides);
+  const hint=$('safeGuideHint');
+  const m=formatInfo(format);
+  const s=m.safe||{t:6,b:6,s:4};
+  if(hint){
+    const tips={story:'Avoid top UI and bottom tab bar.',phonewall:'Keep subject clear of notch/status and home indicator.',xheader:'Leave sides clear — X crops differently on web/app.',a4:'Leave ~5% margin for print trim.',deskwall:'Center subject; edges may crop on ultrawide.'};
+    hint.textContent=tips[format]||'Guides show a safer zone for this format.';
+  }
   if(!showSafeGuides)return;
-  // Story: top/bottom ~12.5% UI zones; Feed: lighter margins
-  const top=format==='story'?12.5:6,bot=format==='story'?12.5:6,side=format==='story'?6:4;
-  ov.innerHTML=`<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="${side}" y="${top}" width="${100-side*2}" height="${100-top-bot}" fill="none" stroke="rgba(139,124,255,.55)" stroke-width=".4" stroke-dasharray="2 1.5"/><text x="50" y="${top-1}" text-anchor="middle" fill="rgba(139,124,255,.7)" font-size="2.8" font-family="Inter">safe area</text></svg>`;
+  const top=s.t,bot=s.b,side=s.s;
+  let extra='';
+  if(format==='phonewall'){
+    extra=`<rect x="30" y="2" width="40" height="3.2" rx="1.5" fill="rgba(139,124,255,.25)"/><text x="50" y="9" text-anchor="middle" fill="rgba(139,124,255,.65)" font-size="2.4" font-family="Inter">clock / notch</text>`;
+  }
+  ov.innerHTML=`<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="${side}" y="${top}" width="${100-side*2}" height="${100-top-bot}" fill="none" stroke="rgba(139,124,255,.55)" stroke-width=".4" stroke-dasharray="2 1.5"/>${extra}<text x="50" y="${Math.max(3,top-1)}" text-anchor="middle" fill="rgba(139,124,255,.7)" font-size="2.8" font-family="Inter">safe area</text></svg>`;
 }
 // Caption copy for posting
 function copyCaption(){
@@ -1807,7 +1914,7 @@ function coverRect(x,y,w,h){
 function cover(W,H){coverRect(0,0,W,H)}
 function getQuoteText(){return displayText(($("quoteText").value||"").trim())}
 function wrap(text,max){let lines=[];for(const para of text.split('\n')){let cur='';for(const word of para.split(/\s+/)){let t=cur?cur+' '+word:word;if(ctx.measureText(t).width>max&&cur){lines.push(cur);cur=word}else cur=t}if(cur)lines.push(cur)}return lines}
-function _realDraw(){const W=LW,H=LH;ctx.setTransform(RSCALE,0,0,RSCALE,0,0);ctx.clearRect(0,0,W,H);hitMap=[];
+function _realDraw(){const W=LW,H=LH;ctx.setTransform(liveScale,0,0,liveScale,0,0);ctx.clearRect(0,0,W,H);hitMap=[];
 if(freeLayout){
   // Background + optional template chrome feel via cover only; text from layers
   cover(W,H);
@@ -2440,7 +2547,38 @@ function syncBgUI(){
   if(grad)grad.classList.toggle('hidden',bgMode!=='gradient');
 }
 
-function download(){drawImmediate();const a=document.createElement('a');a.download='pressed-card.png';a.href=canvas.toDataURL('image/png');a.click();try{pushRecent()}catch(e){}}
+function download(){
+  try{
+    const d=exportDims();
+    const targetScale=d[0]/LW;
+    const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
+    const needBoost=Math.abs(targetScale-liveScale)>0.05||d[0]!==canvas.width;
+    if(needBoost){
+      if(LOW_MEM&&d[0]*d[1]>6e6){toast('Max is heavy on this device — trying High…');exportTier='high';try{updateExportMeta()}catch(e){}const d2=exportDims();liveScale=d2[0]/LW;canvas.width=d2[0];canvas.height=d2[1]}
+      else{liveScale=targetScale;canvas.width=d[0];canvas.height=d[1]}
+      _realDraw();
+    }else drawImmediate();
+    const a=document.createElement('a');
+    a.download='pressed-'+format+'-'+(exportTier||'std')+'.png';
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+    if(needBoost){liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw()}
+    try{pushRecent()}catch(e){}
+    toast('Exported '+d[0]+'×'+d[1]+' ✓');
+  }catch(e){console.warn(e);drawImmediate();const a=document.createElement('a');a.download='pressed-card.png';a.href=canvas.toDataURL('image/png');a.click();toast('Exported (fallback)')}
+}
+function downloadJpg(){
+  try{
+    const d=exportDims();
+    const targetScale=d[0]/LW;
+    const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
+    const needBoost=Math.abs(targetScale-liveScale)>0.05;
+    if(needBoost){liveScale=targetScale;canvas.width=d[0];canvas.height=d[1];_realDraw()}else drawImmediate();
+    const a=document.createElement('a');a.download='pressed-'+format+'.jpg';a.href=canvas.toDataURL('image/jpeg',0.96);a.click();
+    if(needBoost){liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw()}
+    try{pushRecent()}catch(e){}
+  }catch(e){drawImmediate();const a=document.createElement('a');a.download='pressed-card.jpg';a.href=canvas.toDataURL('image/jpeg',0.96);a.click()}
+}
 // Header PNG opens export sheet; direct PNG still available as downloadBtn2
 if($('downloadBtn2'))$('downloadBtn2').onclick=download;
 if($('renderBtn'))$('renderBtn').onclick=drawImmediate;
@@ -2682,7 +2820,7 @@ wireAdvToggle('frameAdvToggle','frameAdvBody');
 if($('nudgeUp'))$('nudgeUp').onclick=()=>{textOffset-=18;draw()};
 if($('nudgeDown'))$('nudgeDown').onclick=()=>{textOffset+=18;draw()};
 // export variants
-function downloadJpg(){drawImmediate();const a=document.createElement('a');a.download='pressed-card.jpg';a.href=canvas.toDataURL('image/jpeg',0.96);a.click();try{pushRecent()}catch(e){}}
+
 async function downloadStory(){
   const prev=format;format='story';resizeCanvas();drawImmediate();
   const a=document.createElement('a');a.download='pressed-story.png';a.href=canvas.toDataURL('image/png');a.click();
@@ -2834,10 +2972,24 @@ function shrinkImage(im,maxDim){return new Promise(resolve=>{const cap=LOW_MEM?M
 async function saveToLibrary(){
   const name=prompt('Name this project:',(($('creditMain').value||'Untitled')+' — '+($('creditSub').value||'')).trim())||'Untitled press';
   const cfg=currentConfig();
-  if(img)cfg.imgData=await shrinkImage(img,960);
   const entry={id:'p'+Date.now(),name,savedAt:Date.now(),cfg,preview:makePreview()};
+  // Prefer IndexedDB for image blob; keep localStorage lean
+  if(img){
+    try{
+      const dataUrl=await shrinkImage(img,LOW_MEM?720:1100);
+      await idbPut('libimg_'+entry.id,dataUrl);
+      cfg.hasIdbImg=true;
+    }catch(e){
+      try{cfg.imgData=await shrinkImage(img,LOW_MEM?640:900)}catch(e2){}
+    }
+  }
   let arr=loadLib();arr.unshift(entry);
-  if(arr.length>MAX_LIB){arr=arr.slice(0,MAX_LIB);toast('Library full — oldest project was removed to make room.')}
+  if(arr.length>MAX_LIB){
+    const dropped=arr.slice(MAX_LIB);
+    arr=arr.slice(0,MAX_LIB);
+    dropped.forEach(d=>{try{idbDel('libimg_'+d.id)}catch(e){}});
+    toast('Library full — oldest project was removed to make room.')
+  }
   saveLib(arr);
   try{pushRecent()}catch(e){}
   if(APP.pendingCollectionId){const cid=APP.pendingCollectionId;addToCollection(cid,entry.id);APP.pendingCollectionId=null;showView('collections');openCollection(cid);toast('Added to your collection ✓')}
@@ -2904,10 +3056,17 @@ async function duplicateWithNewPhoto(id){
   toast('Style kept — upload a new photo');
   $('fileInput').click();
 }
-async function openLibraryProject(id,isRemix){const p=loadLib().find(x=>x.id===id);if(!p)return;await applyConfigWithImage(p.cfg);showView('create');toast(isRemix?'PRESS LOADED — MAKE IT YOURS.':'Project opened ✓')}
+async function openLibraryProject(id,isRemix){
+  const p=loadLib().find(x=>x.id===id);if(!p)return;
+  const cfg=Object.assign({},p.cfg||{});
+  if(cfg.hasIdbImg&&!cfg.imgData){
+    try{const data=await idbGet('libimg_'+id);if(data)cfg.imgData=data}catch(e){}
+  }
+  await applyConfigWithImage(cfg);showView('create');toast(isRemix?'PRESS LOADED — MAKE IT YOURS.':'Project opened ✓')
+}
 function duplicateLibraryProject(id){const arr=loadLib();const p=arr.find(x=>x.id===id);if(!p)return;arr.unshift({...p,id:'p'+Date.now(),name:p.name+' (copy)',savedAt:Date.now()});saveLib(arr);renderLibrary();toast('Duplicated ✓')}
 function renameLibraryProject(id){const arr=loadLib();const p=arr.find(x=>x.id===id);if(!p)return;const n=prompt('Rename project:',p.name);if(!n)return;p.name=n;saveLib(arr);renderLibrary()}
-function deleteLibraryProject(id){if(!confirm('Delete this saved project? This cannot be undone.'))return;saveLib(loadLib().filter(x=>x.id!==id));renderLibrary();renderCollections();toast('Deleted')}
+function deleteLibraryProject(id){if(!confirm('Delete this saved project? This cannot be undone.'))return;try{idbDel('libimg_'+id)}catch(e){};saveLib(loadLib().filter(x=>x.id!==id));renderLibrary();renderCollections();toast('Deleted')}
 async function exportLibraryProject(id){const p=loadLib().find(x=>x.id===id);if(!p)return;toast('Rendering export…');const url=await configToPNG(p.cfg);const a=document.createElement('a');a.download=(p.name||'pressed-card').replace(/[^a-z0-9]+/gi,'-')+'.png';a.href=url;a.click()}
 
 // ============================================================
@@ -3146,17 +3305,220 @@ if($('libAddColl'))$('libAddColl').onclick=()=>{
 // ============================================================
 let contrastNoteTimer=null;
 function checkContrast(){
-  if(!img||treatment!=='plain')return;
-  if(state.darkness<0.22){
-    clearTimeout(contrastNoteTimer);
-    contrastNoteTimer=setTimeout(()=>{
-      if(state.darkness<0.22&&treatment==='plain')
-        toast('Tip: low darkness + plain text can wash out — try Highlight or raise Darkness');
-    },1200);
+  const box=$('contrastWarn');
+  if(!box){
+    // fallback toast path
+    if(!img||treatment!=='plain')return;
+    if(state.darkness<0.22){
+      clearTimeout(contrastNoteTimer);
+      contrastNoteTimer=setTimeout(()=>{
+        if(state.darkness<0.22&&treatment==='plain')
+          toast('Tip: low contrast — try Highlight or raise Darkness');
+      },1200);
+    }
+    return;
   }
+  if(bgMode!=='image'||!img){box.classList.remove('show');return}
+  try{
+    const tw=Math.min(120,canvas.width),th=Math.min(80,canvas.height);
+    const sx=Math.floor((canvas.width-tw)/2),sy=Math.floor(canvas.height*(textPos==='upper'?0.2:textPos==='lower'?0.55:0.4));
+    const data=ctx.getImageData(sx,sy,Math.max(1,tw),Math.max(1,th)).data;
+    let r=0,g=0,b=0,c=0;
+    for(let i=0;i<data.length;i+=16){r+=data[i];g+=data[i+1];b+=data[i+2];c++}
+    if(!c)return;
+    r/=c;g/=c;b/=c;
+    const lin=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)};
+    const L=0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
+    let tc=textColor||'#ffffff';
+    if(tc[0]!=='#')tc='#ffffff';
+    const hex=tc.replace('#','');
+    const full=hex.length===3?hex.split('').map(ch=>ch+ch).join(''):hex;
+    const tr=parseInt(full.slice(0,2),16)||255,tg=parseInt(full.slice(2,4),16)||255,tb=parseInt(full.slice(4,6),16)||255;
+    const Lt=0.2126*lin(tr)+0.7152*lin(tg)+0.0722*lin(tb);
+    const ratio=(Math.max(L,Lt)+0.05)/(Math.min(L,Lt)+0.05);
+    // Highlight treatment usually fixes contrast — don't nag
+    if(ratio<3.2&&treatment!=='highlight'){
+      box.classList.add('show');
+      const msg=$('contrastMsg');
+      if(msg)msg.textContent='Low contrast (~'+ratio.toFixed(1)+':1). Text may be hard to read on this photo.';
+    }else box.classList.remove('show');
+  }catch(e){box.classList.remove('show')}
+}
+function autoFixContrast(){
+  if(treatment!=='highlight'){
+    treatment='highlight';
+    document.querySelectorAll('.style').forEach(x=>x.classList.toggle('active',x.dataset.style==='highlight'));
+    if(!highlight)highlight='#ffffff';
+    toast('Added highlight for contrast');
+  }else{
+    state.darkness=Math.min(0.7,(Number(state.darkness)||0.3)+0.14);
+    if($('darkness')){$('darkness').value=Math.round(state.darkness*100);$('darknessOut').textContent=Math.round(state.darkness*100)}
+    textColor='#ffffff';
+    document.querySelectorAll('#textColors .swatch').forEach(x=>x.classList.toggle('active',(x.dataset.color||'').toLowerCase()==='#ffffff'));
+    toast('Darkened photo + white text');
+  }
+  draw();
 }
 
+
 // ============================================================
+
+// ---- Font pairings (curated) ----
+const FONT_PAIRS={
+  'Playfair Display':'Inter',
+  'Cormorant Garamond':'Space Mono',
+  'Libre Baskerville':'Inter',
+  'Lora':'Outfit',
+  'Instrument Serif':'Space Grotesk',
+  'DM Serif Display':'Inter',
+  'Anton':'Inter',
+  'Bebas Neue':'Inter',
+  'Archivo Black':'Space Grotesk',
+  'Oswald':'Inter',
+  'Syne':'Inter',
+  'Caveat':'Lora',
+  'Special Elite':'Inter',
+  'Space Mono':'Outfit',
+  'VT323':'Space Mono'
+};
+function updatePairChip(){
+  const chip=$('pairChip'),name=$('pairName');
+  if(!chip||!name)return;
+  const f=state.font||'Inter';
+  const pair=FONT_PAIRS[f];
+  if(pair){name.textContent=pair;chip.classList.remove('hidden')}
+  else chip.classList.add('hidden');
+}
+if($('pairChip'))$('pairChip').onclick=()=>{
+  const pair=FONT_PAIRS[state.font];
+  if(!pair)return;
+  // Apply pair to credit feel: keep display font for quote, store credit font preference
+  state.creditFont=pair;
+  toast('Caption/credit pairs with '+pair);
+  draw();
+};
+// Hook font changes
+const _oldFontApply=typeof applyFont==='function'?applyFont:null;
+
+// ---- Shareable Looks (style only, no lyric/photo) ----
+function serializeLook(){
+  const look={
+    v:1,
+    t:template,f:state.font,fs:state.fontSize,ls:state.lineSpace,
+    a:align,tr:treatment,tc:textColor,hl:highlight,
+    fg:filmGrade,g:Math.round((state.grain||0)*100),vi:Math.round((state.vignette||0)*100),
+    lk:Math.round((state.leak||0)*100),lc:state.leakColor,d:Math.round((state.darkness||0)*100),
+    bl:state.blur||0,br:Math.round((state.brightness||1)*100),
+    fmt:format,tp:textPos,cf:creditFmt,bg:bgMode,bc:bgColor,bgG:bgGrad,
+    to:Math.round((textOpacity||1)*100),lts:letterSpacing,tcase:textCase,ts:textShadow,tst:textStroke
+  };
+  try{
+    const json=JSON.stringify(look);
+    const b64=btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    return b64;
+  }catch(e){return null}
+}
+function applyLookCode(code){
+  try{
+    const pad=code.length%4===0?'':'='.repeat(4-(code.length%4));
+    const json=decodeURIComponent(escape(atob(code.replace(/-/g,'+').replace(/_/g,'/')+pad)));
+    const L=JSON.parse(json);
+    if(!L||L.v!==1)throw 0;
+    if(L.t)template=L.t;
+    if(L.f)state.font=L.f;
+    if(L.fs)state.fontSize=L.fs;
+    if(L.ls)state.lineSpace=L.ls;
+    if(L.a)align=L.a;
+    if(L.tr)treatment=L.tr;
+    if(L.tc)textColor=L.tc;
+    if(L.hl)highlight=L.hl;
+    if(L.fg)filmGrade=L.fg;
+    if(L.g!=null)state.grain=L.g/100;
+    if(L.vi!=null)state.vignette=L.vi/100;
+    if(L.lk!=null)state.leak=L.lk/100;
+    if(L.lc)state.leakColor=L.lc;
+    if(L.d!=null)state.darkness=L.d/100;
+    if(L.bl!=null)state.blur=L.bl;
+    if(L.br!=null)state.brightness=L.br/100;
+    if(L.fmt)format=L.fmt;
+    if(L.tp)textPos=L.tp;
+    if(L.cf)creditFmt=L.cf;
+    if(L.bg)bgMode=L.bg;
+    if(L.bc)bgColor=L.bc;
+    if(L.bgG)bgGrad=L.bgG;
+    if(L.to!=null)textOpacity=L.to/100;
+    if(L.lts!=null)letterSpacing=L.lts;
+    if(L.tcase)textCase=L.tcase;
+    if(L.ts!=null)textShadow=L.ts;
+    if(L.tst!=null)textStroke=L.tst;
+    // Don't touch quote/credit/photo
+    try{syncUIFromState()}catch(e){}
+    resizeCanvas();draw();
+    toast('Look applied — add your words & photo');
+    return true;
+  }catch(e){toast('Could not read that Look code');return false}
+}
+function copyShareLook(){
+  const code=serializeLook();
+  if(!code)return toast('Could not build Look');
+  const url=location.origin+location.pathname+'?look='+code;
+  const inp=$('shareLookInput');
+  if(inp){inp.classList.remove('hidden');inp.value=url}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>toast('Look link copied')).catch(()=>toast('Copy the link below'));
+  }else toast('Copy the link below');
+}
+if($('shareLookBtn'))$('shareLookBtn').onclick=copyShareLook;
+if($('contrastFixBtn'))$('contrastFixBtn').onclick=autoFixContrast;
+// Apply ?look= on boot
+(function bootLook(){
+  try{
+    const q=new URLSearchParams(location.search).get('look');
+    if(q){setTimeout(()=>{applyLookCode(q);showView('create')},600)}
+  }catch(e){}
+})();
+
+// ---- IndexedDB for library images (keeps localStorage light) ----
+const IDB_NAME='pressed_idb_v1',IDB_STORE='images';
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB)return reject(new Error('no idb'));
+    const req=indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE)};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function idbPut(key,blob){
+  const db=await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(blob,key);
+    tx.oncomplete=()=>resolve(true);
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+async function idbGet(key){
+  const db=await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const r=tx.objectStore(IDB_STORE).get(key);
+    r.onsuccess=()=>resolve(r.result);
+    r.onerror=()=>reject(r.error);
+  });
+}
+async function idbDel(key){
+  try{
+    const db=await idbOpen();
+    return new Promise((resolve)=>{
+      const tx=db.transaction(IDB_STORE,'readwrite');
+      tx.objectStore(IDB_STORE).delete(key);
+      tx.oncomplete=()=>resolve(true);
+      tx.onerror=()=>resolve(false);
+    });
+  }catch(e){return false}
+}
+
 // PWA — installable app (works when hosted on https)
 // ============================================================
 (function setupPWA(){
@@ -3188,7 +3550,7 @@ function checkContrast(){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v19';
+      const CACHE='pressed-v20';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -3267,6 +3629,7 @@ function checkContrast(){
 // ============================================================
 try{resizeCanvas()}catch(e){}
 document.body.classList.add('show-m-actions'); // start on Create
+try{updateExportMeta();updatePairChip()}catch(e){}
 renderDaily();renderMoods();renderLibrary();renderCollections();renderLookbook();renderRecents();
 updateEmptyGuide();updateSafeOverlay();
 if(document.fonts)document.fonts.ready.then(()=>{drawImmediate();updateEmptyGuide()});else{drawImmediate();updateEmptyGuide()}
