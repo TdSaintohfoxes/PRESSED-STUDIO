@@ -1,6 +1,6 @@
-const CACHE='pressed-v22';
+const CACHE='pressed-v23';
 self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest','./logo-mark.png','./icon-192.png','./icon-512.png','./favicon-32.png','./apple-touch-icon.png']).catch(()=>{}));
   self.skipWaiting();
 });
 self.addEventListener('activate',e=>{

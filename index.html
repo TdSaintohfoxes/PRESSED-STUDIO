@@ -10,10 +10,10 @@
 <meta name="apple-mobile-web-app-title" content="PRESSED">
 <meta name="description" content="PRESSED — make lyric and quote cards on your device.">
 <title>PRESSED</title>
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bebas+Neue&family=Caveat:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,600&family=DM+Mono:wght@400;500&family=DM+Serif+Display&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:wght@400;600;700&family=Oswald:wght@400;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,600&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Special+Elite&family=Syne:wght@600;700;800&family=VT323&family=Cinzel:wght@600;700&family=Great+Vibes&family=Black+Ops+One&family=Righteous&family=Lobster&family=Pacifico&display=swap" rel="stylesheet">
 <style>
@@ -1429,6 +1429,21 @@ function wireArtifactControls(){
   br('stampOpacity','stampOpacityOut',el=>{artStamp.opacity=(+el.value)/100});
   document.querySelectorAll('.scorner').forEach(b=>b.onclick=()=>{artStamp.corner=b.dataset.scorner;document.querySelectorAll('.scorner').forEach(x=>x.classList.toggle('active',x===b));draw()});
 }
+function creditStyle(ctx){
+  ctx.globalAlpha=artCredit.opacity;
+  ctx.font='700 '+artCredit.size+'px "'+artCredit.font+'",Inter,sans-serif';
+  ctx.fillStyle=artCredit.color;
+}
+function fillBrand(ctx,x,y,align){
+  const t=brandStamp||'PRESSED.'; if(!t)return;
+  ctx.save();
+  ctx.globalAlpha=artStamp.opacity;
+  ctx.font='700 '+artStamp.size+'px "'+artStamp.font+'",Inter,sans-serif';
+  ctx.fillStyle=artStamp.color;
+  if(align)ctx.textAlign=align;
+  ctx.fillText(t,x,y);
+  ctx.restore();
+}
 function drawStampAt(ctx,W,H,pad){
   const t=brandStamp||'PRESSED.'; if(!t)return;
   ctx.save();
@@ -2412,7 +2427,7 @@ function drawFreeLayers(W,H){
       registerHit('credit',x-6,y-12,tw+12,24);
       // stamp
       ctx.textAlign='right';ctx.font='700 11px Inter';ctx.fillStyle='rgba(255,255,255,.5)';
-      ctx.fillText(brandStamp||'PRESSED.',W-pad,y);
+      ctx.font='700 '+artStamp.size+'px "'+artStamp.font+'",Inter,sans-serif';ctx.fillStyle=artStamp.color;ctx.globalAlpha=artStamp.opacity;fillBrand(ctx,W-pad,y);ctx.globalAlpha=1;
     }
   });
 }
@@ -2573,13 +2588,13 @@ function drawGenius(W,H){
   ctx.textAlign='right';
   ctx.font='700 13px Inter';
   ctx.fillStyle='rgba(255,255,255,.85)';
-  ctx.fillText(brandStamp||'PRESSED.',W-pad,creditY);
+  ctx.font='700 '+artStamp.size+'px "'+artStamp.font+'",Inter,sans-serif';ctx.fillStyle=artStamp.color;ctx.globalAlpha=artStamp.opacity;fillBrand(ctx,W-pad,creditY);ctx.globalAlpha=1;
 }
 
 function drawClassic(W,H){cover(W,H);const pad=template==='minimal'?70:55,max=W-pad*2;let fs=state.fontSize;ctx.font=fontString(fs);let lines=wrap(getQuoteText()||' ',max-30);const bar=template==='minimal'?0:(BAR[format]||135);while(lines.length*fs*state.lineSpace>(H-bar)*.55&&fs>18){fs--;ctx.font=fontString(fs);lines=wrap(getQuoteText()||' ',max-30)}let lh=fs*state.lineSpace,block=lines.length*lh;let y=template==='editorial'?H*.28:textBlockY(H,block,bar);ctx.textBaseline='middle';ctx.textAlign=align;let anchor=align==='left'?pad:align==='right'?W-pad:W/2;
 if(template==='editorial'){ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillRect(0,0,12,H);ctx.fillStyle=textColor;ctx.font='600 14px Inter';ctx.textAlign='left';ctx.fillText(mode==='quote'?'QUOTED WORDS':'SELECTED LYRICS',34,42);ctx.textAlign=align}
 lines.forEach((line,i)=>{let yy=y+i*lh;let tw=ctx.measureText(line).width;if(treatment==='highlight'){let x=align==='left'?anchor-14:align==='right'?anchor-tw-14:anchor-tw/2-14;ctx.fillStyle=highlight;ctx.fillRect(x,yy-lh/2+2,tw+28,lh-6);ctx.fillStyle=readableOn(highlight);ctx.fillText(line,anchor,yy)}else if(treatment==='outline'){ctx.lineWidth=Math.max(2,fs/18);ctx.strokeStyle='#000';ctx.strokeText(line,anchor,yy);ctx.fillStyle=textColor;ctx.fillText(line,anchor,yy)}else{ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=18;ctx.fillStyle=textColor;ctx.fillText(line,anchor,yy);ctx.shadowBlur=0}});
-if(bar){ctx.fillStyle=template==='editorial'?'rgba(10,12,15,.9)':'rgba(7,9,11,.88)';ctx.fillRect(0,H-bar,W,bar);ctx.textAlign='left';ctx.fillStyle='#fff';ctx.font='700 18px Inter';const cl=formatCreditLine();let cfs=18;ctx.font=`700 ${cfs}px Inter`;while(ctx.measureText(cl).width>W*0.62&&cfs>11){cfs--;ctx.font=`700 ${cfs}px Inter`}ctx.fillText(cl,pad,H-bar+bar*0.42);if(mode==='now'){ctx.font='600 12px Inter';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(($('album').value||'')+'  ·  '+($('year').value||''),pad,H-bar+bar*0.72)}ctx.textAlign='right';ctx.font='700 13px Inter';ctx.fillStyle='rgba(255,255,255,.8)';ctx.fillText(brandStamp||'PRESSED.',W-pad,H-bar+bar*0.42)}else{
+if(bar){ctx.fillStyle=template==='editorial'?'rgba(10,12,15,.9)':'rgba(7,9,11,.88)';ctx.fillRect(0,H-bar,W,bar);ctx.textAlign='left';ctx.fillStyle='#fff';ctx.font='700 18px Inter';const cl=formatCreditLine();let cfs=18;ctx.font=`700 ${cfs}px Inter`;while(ctx.measureText(cl).width>W*0.62&&cfs>11){cfs--;ctx.font=`700 ${cfs}px Inter`}ctx.fillText(cl,pad,H-bar+bar*0.42);if(mode==='now'){ctx.font='600 12px Inter';ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillText(($('album').value||'')+'  ·  '+($('year').value||''),pad,H-bar+bar*0.72)}ctx.textAlign='right';ctx.font='700 '+artStamp.size+'px "'+artStamp.font+'",Inter';ctx.fillStyle=artStamp.color;ctx.globalAlpha=artStamp.opacity;fillBrand(ctx,W-pad,H-bar+bar*0.42);ctx.globalAlpha=1}else{
   // Minimal — always show artist/song + stamp so credits never disappear
   ctx.textBaseline='alphabetic';
   ctx.font='700 13px Inter';ctx.fillStyle='rgba(255,255,255,.9)';ctx.textAlign='left';
@@ -2599,7 +2614,7 @@ const capTop=iy+ih,capBottom=H-margin;ctx.textAlign='left';ctx.textBaseline='alp
 const cl=formatCreditLine();let cfs=18;ctx.font=`700 ${cfs}px Inter`;
 while(ctx.measureText(cl).width>iw*0.7&&cfs>12){cfs--;ctx.font=`700 ${cfs}px Inter`}
 ctx.fillText(cl,ix,capTop+capH*0.48);
-ctx.textAlign='right';ctx.font='700 12px Inter';ctx.fillStyle='#9a9a9a';ctx.fillText(brandStamp||'PRESSED.',ix+iw,capBottom-6);}
+ctx.textAlign='right';ctx.font='700 '+artStamp.size+'px "'+artStamp.font+'",Inter';ctx.fillStyle=artStamp.color;ctx.globalAlpha=artStamp.opacity;fillBrand(ctx,ix+iw,capBottom-6);ctx.globalAlpha=1;}
 
 function drawBarcode(cx,baseY,width,seedText){const s=(seedText||'x').split('').reduce((a,c)=>a+c.charCodeAt(0),0);const n=26,x0=cx-width/2;ctx.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<n;i++){const h=4+((s*(i+3))%9);const w=(i%3===0)?2.4:1.2;ctx.fillRect(x0+i*(width/n),baseY-h,w,h)}}
 
@@ -2625,7 +2640,7 @@ function drawNewspaper(W,H){
   // Masthead
   ctx.fillStyle='#1a1410';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font=`700 ${Math.round(W*0.07)}px "Playfair Display",serif`;
-  ctx.fillText(brandStamp||'PRESSED.',W/2,m+Math.round(H*0.04));
+  fillBrand(ctx,W/2,m+Math.round(H*0.04));
   ctx.font='600 11px Inter';ctx.fillStyle='#5a5048';
   const d=new Date();const dateStr=d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}).toUpperCase();
   ctx.fillText(dateStr,W/2,m+Math.round(H*0.085));
@@ -2691,7 +2706,7 @@ function drawTradeCard(W,H){
     ctx.fillStyle='#fff';ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=12;
     ctx.fillText(q,W/2,inner+photoH*0.88);ctx.shadowBlur=0}
   ctx.textAlign='right';ctx.font='700 10px Inter';ctx.fillStyle='rgba(0,0,0,.45)';
-  ctx.fillText(brandStamp||'PRESSED.',W-inner-10,H-inner-12);
+  fillBrand(ctx,W-inner-10,H-inner-12);
 }
 
 function drawLED(W,H){
@@ -2714,7 +2729,7 @@ function drawLED(W,H){
   ctx.font='600 14px Inter';ctx.fillStyle='rgba(255,255,255,.55)';
   ctx.fillText(formatCreditLine(),W/2,H*0.78);
   ctx.font='700 11px Inter';ctx.fillStyle='rgba(255,255,255,.35)';
-  ctx.fillText(brandStamp||'PRESSED.',W/2,H*0.86);
+  fillBrand(ctx,W/2,H*0.86);
 }
 
 function drawProgramme(W,H){
@@ -2735,7 +2750,7 @@ function drawProgramme(W,H){
   ctx.font='700 12px Inter';ctx.fillStyle=accent;
   ctx.fillText(formatCreditLine(),m,H-m-8);
   ctx.textAlign='right';ctx.fillStyle='#666';ctx.font='600 11px Inter';
-  ctx.fillText(brandStamp||'PRESSED.',W-m,H-m-8);
+  fillBrand(ctx,W-m,H-m-8);
 }
 
 function drawScarf(W,H){
@@ -2755,7 +2770,7 @@ function drawScarf(W,H){
   ctx.font='700 12px Inter';ctx.fillStyle='rgba(255,255,255,.8)';
   ctx.fillText(formatCreditLine(),W/2,H-28);
   ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='700 11px Inter';
-  ctx.fillText(brandStamp||'PRESSED.',W/2,H-12);
+  fillBrand(ctx,W/2,H-12);
 }
 
 function drawCartridge(W,H){
@@ -2801,7 +2816,7 @@ function drawDialogue(W,H){
   const lines=wrap($('quoteText').value.trim()||'…',W-pad*2-28);
   lines.slice(0,3).forEach((line,i)=>ctx.fillText(line,pad+14,boxY+44+i*Math.round(state.fontSize*0.75)));
   ctx.textAlign='right';ctx.font='700 10px Inter';ctx.fillStyle='rgba(255,255,255,.45)';
-  ctx.fillText(brandStamp||'PRESSED.',W-pad-10,boxY+boxH-12);
+  fillBrand(ctx,W-pad-10,boxY+boxH-12);
 }
 
 function drawBoot(W,H){
@@ -2816,7 +2831,7 @@ function drawBoot(W,H){
   ctx.font='600 12px Inter';ctx.fillStyle='rgba(51,255,102,.55)';
   ctx.fillText(formatCreditLine(),W/2,H*0.84);
   ctx.fillStyle='rgba(51,255,102,.35)';ctx.font='700 11px Inter';
-  ctx.fillText(brandStamp||'PRESSED.',W/2,H*0.9);
+  fillBrand(ctx,W/2,H*0.9);
 }
 
 // Authentic Parental Advisory sticker (matches classic RIAA mark)
@@ -2907,7 +2922,7 @@ function drawAlbum(W,H){
   ctx.textAlign='left';ctx.font='700 13px Inter';ctx.fillStyle='#fff';
   ctx.fillText(formatCreditLine(),left,H-pad);
   ctx.textAlign='right';ctx.font='700 11px Inter';ctx.fillStyle='rgba(255,255,255,.6)';
-  ctx.fillText(brandStamp||'PRESSED.',W-pad,H-pad);
+  fillBrand(ctx,W-pad,H-pad);
 }
 
 function runDesignTips(W,H){
@@ -3227,9 +3242,16 @@ if($('nudgeDown'))$('nudgeDown').onclick=()=>{textOffset+=18;draw()};
 // export variants
 
 async function downloadStory(){
-  const prev=format;format='story';resizeCanvas();drawImmediate();
-  const a=document.createElement('a');a.download='pressed-story.png';a.href=canvas.toDataURL('image/png');a.click();
-  format=prev;resizeCanvas();drawImmediate();toast('Story size exported ✓');
+  const prev=format;format='story';resizeCanvas();
+  try{
+    const d=exportDims();
+    const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
+    liveScale=d[0]/LW;canvas.width=d[0];canvas.height=d[1];
+    _realDraw();
+    const a=document.createElement('a');a.download='pressed-story-'+(exportTier||'std')+'.png';a.href=canvas.toDataURL('image/png');a.click();
+    liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;
+  }catch(e){drawImmediate();const a=document.createElement('a');a.download='pressed-story.png';a.href=canvas.toDataURL('image/png');a.click()}
+  format=prev;resizeCanvas();drawImmediate();toast('Story exported ✓');
 }
 if($('downloadJpgBtn'))$('downloadJpgBtn').onclick=downloadJpg;
 if($('downloadStoryBtn'))$('downloadStoryBtn').onclick=downloadStory;
@@ -3955,7 +3977,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v22';
+      const CACHE='pressed-v23';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
