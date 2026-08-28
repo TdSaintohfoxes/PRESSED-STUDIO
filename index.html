@@ -159,6 +159,24 @@ body.show-m-actions .app{padding-bottom:calc(150px + env(safe-area-inset-bottom,
 .onboard-card .btn{width:100%;min-height:46px;margin-top:8px}
 .backup-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 
+
+/* v21 identity */
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:28px;height:28px;border-radius:8px;flex-shrink:0}
+.edtab.active{background:linear-gradient(135deg,var(--accent),#6b5ce7)!important;color:#0a0812!important;box-shadow:0 4px 16px rgba(139,124,255,.3)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#7a6af0);border:0;box-shadow:0 6px 20px rgba(139,124,255,.25)}
+.quality-list{display:flex;flex-direction:column;gap:8px;margin:8px 0 12px}
+.quality-opt{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#100e18;cursor:pointer;text-align:left;width:100%;color:var(--text);font:600 12px Inter,sans-serif}
+.quality-opt.active{border-color:var(--accent);background:rgba(139,124,255,.1)}
+.quality-opt .q-title{font-weight:700}
+.quality-opt .q-dim{color:var(--muted);font-size:11px;margin-top:2px}
+.quality-opt .q-warn{color:#ffb86b;font-size:10px;margin-top:4px}
+.artifact-block{padding:12px;border:1px solid var(--line);border-radius:12px;background:#100e18;margin-bottom:12px}
+.artifact-block h4{margin:0 0 10px;font:700 10px Inter,sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2,#a89bff)}
+.artifact-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.coll-body{animation:pressIn .18s ease}
+@keyframes pressIn{from{opacity:.4;transform:translateY(-3px)}to{opacity:1;transform:none}}
+
 .format-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .format-grid .preset{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px;text-align:left;min-height:56px}
 .format-grid .preset b{font:700 12px Inter,sans-serif}
@@ -503,7 +521,7 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 <button class="btn primary" id="backupNudgeExport" type="button" style="min-height:36px;padding:6px 12px;font-size:11px">Backup now</button>
 <button class="btn secondary" id="backupNudgeDismiss" type="button" style="min-height:36px;padding:6px 12px;font-size:11px">Later</button>
 </div>
-<header class="topbar"><div><div class="brand">PRESSED<i>.</i></div><div class="tag">visual culture studio</div></div><div class="top-actions"><div class="undo-bar"><button class="btn secondary" id="undoBtn" title="Undo (Ctrl/⌘+Z)" type="button" aria-label="Undo">↶<span class="ulbl">Undo</span></button><button class="btn secondary" id="redoBtn" title="Redo (Ctrl/⌘+Shift+Z)" type="button" aria-label="Redo">↷<span class="ulbl">Redo</span></button></div><button class="btn secondary hidden" id="installHeaderBtn" type="button">Install</button><button class="btn" id="surpriseBtn" type="button"><span class="lbl-full">✦ Surprise Me</span><span class="lbl-short">✦ Surprise</span></button><button class="btn primary" id="downloadBtn" type="button"><span class="lbl-full">Download PNG</span><span class="lbl-short">PNG</span></button></div></header>
+<header class="topbar"><div><div class="brand"><img class="brand-mark" src="logo-mark.png" alt="" width="28" height="28"><span>PRESSED<i>.</i></span></div><div class="tag">visual culture studio</div></div><div class="top-actions"><div class="undo-bar"><button class="btn secondary" id="undoBtn" title="Undo (Ctrl/⌘+Z)" type="button" aria-label="Undo">↶<span class="ulbl">Undo</span></button><button class="btn secondary" id="redoBtn" title="Redo (Ctrl/⌘+Shift+Z)" type="button" aria-label="Redo">↷<span class="ulbl">Redo</span></button></div><button class="btn secondary hidden" id="installHeaderBtn" type="button">Install</button><button class="btn" id="surpriseBtn" type="button"><span class="lbl-full">✦ Surprise Me</span><span class="lbl-short">✦ Surprise</span></button><button class="btn primary" id="downloadBtn" type="button"><span class="lbl-full">Download PNG</span><span class="lbl-short">PNG</span></button></div></header>
 
 <nav class="mainnav" id="mainNav" aria-label="Main">
 <button class="navbtn active" data-view="create" type="button"><span class="navico" aria-hidden="true">✦</span><span class="navlbl">Create</span></button>
@@ -523,9 +541,9 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 </div>
 <div class="layout"><aside class="panel"><div class="scroll">
 <div class="edtabs">
-<button class="edtab active" data-zone="words">Words</button>
-<button class="edtab" data-zone="look">Look</button>
-<button class="edtab" data-zone="frame">Frame</button>
+<button class="edtab active" data-zone="words">Content</button>
+<button class="edtab" data-zone="look">Style</button>
+<button class="edtab" data-zone="frame">Layout</button>
 </div>
 
 <!-- ===== WORDS ZONE ===== -->
@@ -657,13 +675,13 @@ Everybody needs you</textarea></div>
 <span id="contrastMsg">Low contrast on this photo.</span>
 <div class="row"><button type="button" class="btn primary" id="contrastFixBtn" style="min-height:36px;font-size:11px">Auto-adjust</button></div>
 </div>
-<div class="section collapsible open" data-coll="image">
+<div class="section collapsible" data-coll="image">
 <div class="coll-head"><h3>Image</h3><span class="coll-chev">▾</span></div>
 <div class="coll-body">
 <div class="row"><div class="field"><label>Darkness</label><div class="range-row"><input id="darkness" type="range" min="0" max="90" value="35"><output id="darknessOut">35</output></div></div><div class="field"><label>Blur</label><div class="range-row"><input id="blur" type="range" min="0" max="20" value="0"><output id="blurOut">0</output></div></div></div>
 <div class="field"><label>Brightness</label><div class="range-row"><input id="brightness" type="range" min="50" max="150" value="100"><output id="brightnessOut">100</output></div></div>
 </div></div>
-<div class="section collapsible open" data-coll="film">
+<div class="section collapsible" data-coll="film">
 <div class="coll-head"><h3>Film look</h3><span class="coll-chev">▾</span></div>
 <div class="coll-body">
 <p class="mini" style="margin:0 0 12px">Packs set grain, vignette &amp; grade together. Fine-tune after if you want.</p>
@@ -722,7 +740,7 @@ Everybody needs you</textarea></div>
 <div class="export-tier" id="exportTier">
 <button type="button" class="preset etier active" data-tier="standard">Standard</button>
 <button type="button" class="preset etier" data-tier="high">High</button>
-<button type="button" class="preset etier" data-tier="max">Max</button>
+<button type="button" class="preset etier" data-tier="max">Ultra</button>
 </div>
 <p class="export-meta" id="exportMeta">PNG ~1–3 MB · matches on-screen clarity</p>
 </div>
@@ -748,19 +766,53 @@ Everybody needs you</textarea></div>
 <button class="btn secondary" type="button" id="layerResetPos">Reset pos</button>
 </div>
 </div>
-<div style="margin-bottom:16px">
-<h3 style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--accent);margin:0 0 10px">Credit line</h3>
-<div class="triple">
+<div class="artifact-block">
+<h4>Credit line</h4>
+<div class="triple" style="margin-bottom:10px">
 <button class="preset cfmt active" data-cfmt="quoted">Artist, "Song"</button>
 <button class="preset cfmt" data-cfmt="dash">Artist — Song</button>
 <button class="preset cfmt" data-cfmt="artist">Artist only</button>
 </div>
-<p class="mini" id="creditPreview" style="margin-top:10px;padding:8px 10px;background:#100e18;border-radius:8px;border:1px solid var(--line);color:var(--text);letter-spacing:.02em">Preview: —</p>
+<p class="mini" id="creditPreview" style="margin:0 0 10px;padding:8px 10px;background:#0c0a12;border-radius:8px;border:1px solid var(--line)">Preview: —</p>
+<div class="artifact-grid">
+<div class="field"><label>Font</label>
+<select id="creditFontSel" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:#0c0a12;color:var(--text)">
+<option>Inter</option><option>Space Grotesk</option><option>Outfit</option><option>Syne</option><option>Playfair Display</option><option>Space Mono</option>
+</select></div>
+<div class="field"><label>Size</label><div class="range-row"><input id="creditSize" type="range" min="10" max="28" value="14"><output id="creditSizeOut">14</output></div></div>
 </div>
-<div>
-<h3 style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--accent);margin:0 0 10px">Your stamp</h3>
-<div class="field"><label>Small credit mark on every card</label><input id="brandStamp" type="text" value="PRESSED." placeholder="PRESSED."></div>
-<p class="mini">Try your handle — remembered across sessions.</p>
+<div class="artifact-grid">
+<div class="field"><label>Color</label><input id="creditColor" type="color" value="#ffffff" style="width:100%;height:34px;border-radius:8px;border:1px solid var(--line);background:#0c0a12"></div>
+<div class="field"><label>Opacity</label><div class="range-row"><input id="creditOpacity" type="range" min="30" max="100" value="90"><output id="creditOpacityOut">90%</output></div></div>
+</div>
+<label>Placement</label>
+<div class="triple">
+<button type="button" class="preset cpos active" data-cpos="bottom">Bottom</button>
+<button type="button" class="preset cpos" data-cpos="top">Top</button>
+<button type="button" class="preset cpos" data-cpos="hidden">Hide</button>
+</div>
+</div>
+<div class="artifact-block">
+<h4>Stamp</h4>
+<div class="field"><label>Text</label><input id="brandStamp" type="text" value="PRESSED." placeholder="PRESSED."></div>
+<div class="artifact-grid">
+<div class="field"><label>Font</label>
+<select id="stampFontSel" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:#0c0a12;color:var(--text)">
+<option>Inter</option><option>Space Mono</option><option>Syne</option><option>Bebas Neue</option><option>Special Elite</option>
+</select></div>
+<div class="field"><label>Size</label><div class="range-row"><input id="stampSize" type="range" min="9" max="22" value="12"><output id="stampSizeOut">12</output></div></div>
+</div>
+<div class="artifact-grid">
+<div class="field"><label>Color</label><input id="stampColor" type="color" value="#ffffff" style="width:100%;height:34px;border-radius:8px;border:1px solid var(--line);background:#0c0a12"></div>
+<div class="field"><label>Opacity</label><div class="range-row"><input id="stampOpacity" type="range" min="20" max="100" value="75"><output id="stampOpacityOut">75%</output></div></div>
+</div>
+<label>Corner</label>
+<div class="triple">
+<button type="button" class="preset scorner active" data-scorner="br">Bottom right</button>
+<button type="button" class="preset scorner" data-scorner="bl">Bottom left</button>
+<button type="button" class="preset scorner" data-scorner="tr">Top right</button>
+</div>
+<p class="mini" style="margin-top:8px">Saved with each project. Account can store defaults.</p>
 </div>
 </div>
 </div>
@@ -793,7 +845,7 @@ Everybody needs you</textarea></div>
 <button class="btn secondary" id="shareXBtn">Share to X</button>
 <button class="btn secondary" id="saveLibBtn">Save</button>
 </div>
-<div class="hint">Tip: Words → Look → Press. Advanced is under Frame. Or try ✦ Surprise Me.</div>
+<div class="hint">Tip: Content → Style → Layout. Quality is in Export. Or try ✦ Surprise Me.</div>
 </main></div>
 
 <!-- Mobile sticky action bar (above bottom nav) -->
@@ -816,6 +868,12 @@ Everybody needs you</textarea></div>
 <div class="export-sheet-panel">
 <div class="export-sheet-handle"></div>
 <h3>Export</h3>
+<p class="mini" style="margin:0 0 6px">Quality</p>
+<div class="quality-list" id="exportQualityList">
+<button type="button" class="quality-opt active" data-tier="standard"><div><div class="q-title">Standard</div><div class="q-dim" data-qdim="standard">—</div></div></button>
+<button type="button" class="quality-opt" data-tier="high"><div><div class="q-title">High</div><div class="q-dim" data-qdim="high">—</div></div></button>
+<button type="button" class="quality-opt" data-tier="max"><div><div class="q-title">Ultra</div><div class="q-dim" data-qdim="max">—</div><div class="q-warn" id="ultraWarn" style="display:none">May be slow on this device</div></div></button>
+</div>
 <button class="btn primary" type="button" id="esPng">Download PNG</button>
 <button class="btn secondary" type="button" id="esJpg">Download JPG</button>
 <button class="btn secondary" type="button" id="esStory">Story size + PNG</button>
@@ -1000,6 +1058,7 @@ Everybody needs you</textarea></div>
 <h4>Brand stamp</h4>
 <p>Small credit mark on every card</p>
 <input id="accountBrandStamp" type="text" placeholder="PRESSED." style="margin-top:10px">
+<button type="button" class="btn secondary" id="saveArtDefaultsBtn" style="margin-top:10px;width:100%">Save stamp &amp; credit style as default</button>
 <button class="btn secondary" id="accountSaveStamp" type="button">Save stamp</button>
 </div>
 
@@ -1064,6 +1123,47 @@ const ACCTS_KEY='pressed_accounts_v1',SESSION_KEY='pressed_session_v1';
 let currentUser=null;
 // Declared early: refreshSettingsUI / initAuth run before the old declaration site
 let brandStamp=(()=>{try{return localStorage.getItem('pressed_brand_v1')||'PRESSED.'}catch(e){return 'PRESSED.'}})();
+let artCredit={font:'Inter',size:14,color:'#ffffff',opacity:0.9,pos:'bottom'};
+let artStamp={font:'Inter',size:12,color:'#ffffff',opacity:0.75,corner:'br'};
+try{const ac=JSON.parse(localStorage.getItem('pressed_art_defaults_v1')||'null');if(ac&&ac.credit)Object.assign(artCredit,ac.credit);if(ac&&ac.stamp)Object.assign(artStamp,ac.stamp)}catch(e){}
+function saveArtDefaults(){try{localStorage.setItem('pressed_art_defaults_v1',JSON.stringify({credit:artCredit,stamp:Object.assign({},artStamp,{text:brandStamp})}))}catch(e){}}
+function syncArtifactUI(){
+  const set=(id,v)=>{const el=$(id);if(el)el.value=v};
+  set('creditFontSel',artCredit.font);set('creditSize',artCredit.size);if($('creditSizeOut'))$('creditSizeOut').textContent=artCredit.size;
+  set('creditColor',artCredit.color);set('creditOpacity',Math.round(artCredit.opacity*100));if($('creditOpacityOut'))$('creditOpacityOut').textContent=Math.round(artCredit.opacity*100)+'%';
+  document.querySelectorAll('.cpos').forEach(x=>x.classList.toggle('active',x.dataset.cpos===artCredit.pos));
+  set('stampFontSel',artStamp.font);set('stampSize',artStamp.size);if($('stampSizeOut'))$('stampSizeOut').textContent=artStamp.size;
+  set('stampColor',artStamp.color);set('stampOpacity',Math.round(artStamp.opacity*100));if($('stampOpacityOut'))$('stampOpacityOut').textContent=Math.round(artStamp.opacity*100)+'%';
+  document.querySelectorAll('.scorner').forEach(x=>x.classList.toggle('active',x.dataset.scorner===artStamp.corner));
+}
+function wireArtifactControls(){
+  const br=(id,out,fn)=>{const el=$(id);if(!el)return;el.oninput=()=>{fn(el);if($(out))$(out).textContent=String(out).includes('Opacity')?el.value+'%':el.value;draw()}};
+  if($('creditFontSel'))$('creditFontSel').onchange=e=>{artCredit.font=e.target.value;draw()};
+  br('creditSize','creditSizeOut',el=>{artCredit.size=+el.value});
+  if($('creditColor'))$('creditColor').oninput=e=>{artCredit.color=e.target.value;draw()};
+  br('creditOpacity','creditOpacityOut',el=>{artCredit.opacity=(+el.value)/100});
+  document.querySelectorAll('.cpos').forEach(b=>b.onclick=()=>{artCredit.pos=b.dataset.cpos;document.querySelectorAll('.cpos').forEach(x=>x.classList.toggle('active',x===b));draw()});
+  if($('stampFontSel'))$('stampFontSel').onchange=e=>{artStamp.font=e.target.value;draw()};
+  br('stampSize','stampSizeOut',el=>{artStamp.size=+el.value});
+  if($('stampColor'))$('stampColor').oninput=e=>{artStamp.color=e.target.value;draw()};
+  br('stampOpacity','stampOpacityOut',el=>{artStamp.opacity=(+el.value)/100});
+  document.querySelectorAll('.scorner').forEach(b=>b.onclick=()=>{artStamp.corner=b.dataset.scorner;document.querySelectorAll('.scorner').forEach(x=>x.classList.toggle('active',x===b));draw()});
+}
+function drawStampAt(ctx,W,H,pad){
+  const t=brandStamp||'PRESSED.'; if(!t)return;
+  ctx.save();
+  ctx.globalAlpha=artStamp.opacity;
+  ctx.font='700 '+artStamp.size+'px "'+artStamp.font+'",Inter,sans-serif';
+  ctx.fillStyle=artStamp.color;
+  let x=W-pad,y=H-pad*0.7,al='right';
+  const c=artStamp.corner||'br';
+  if(c==='bl'){x=pad;al='left'}
+  if(c==='tr'){x=W-pad;y=pad+artStamp.size;al='right'}
+  ctx.textAlign=al;ctx.textBaseline='alphabetic';
+  ctx.fillText(t,x,y);
+  ctx.restore();
+}
+
 async function hashPass(p){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('pressed|'+p));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -1106,7 +1206,8 @@ function refreshSettingsUI(){
     if($('accountAv'))$('accountAv').textContent=initial;
     if($('settingsName'))$('settingsName').value=currentUser?(currentUser.name||''):'';
     const stamp=(typeof brandStamp!=='undefined'&&brandStamp)?brandStamp:'PRESSED.';
-    if($('accountBrandStamp'))$('accountBrandStamp').value=stamp;
+    if($('saveArtDefaultsBtn'))$('saveArtDefaultsBtn').onclick=()=>{saveArtDefaults();toast('Defaults saved')};
+if($('accountBrandStamp'))$('accountBrandStamp').value=stamp;
     const defFmt=(currentUser&&currentUser.settings&&currentUser.settings.defaultFormat)||'square';
     document.querySelectorAll('.set-fmt').forEach(b=>b.classList.toggle('active',b.dataset.fmt===defFmt));
     try{applyAccentToUI()}catch(e){}
@@ -1429,7 +1530,7 @@ function buildFontGrid(){
   });
 }
 function syncFontGrid(){const box=$('fontGrid');if(!box)return;box.querySelectorAll('.font-btn').forEach(x=>x.classList.toggle('active',x.dataset.font===state.font))}
-buildFontGrid();try{updatePairChip()}catch(e){}
+buildFontGrid();try{updatePairChip();wireArtifactControls();syncArtifactUI()}catch(e){}
 function readableOn(hex){const c=(hex||'#ffffff').replace('#','');const r=parseInt(c.substring(0,2),16),g=parseInt(c.substring(2,4),16),b=parseInt(c.substring(4,6),16);const lum=(0.299*r+0.587*g+0.114*b)/255;return lum>0.6?'#111111':'#ffffff'}
 // render at 2x and scale down for crisp, non-jagged text at export size
 // Lower resolution on small/weak devices to prevent tab crashes
@@ -1472,8 +1573,18 @@ function updateExportMeta(){
   const d=exportDims();
   const mp=((d[0]*d[1])/1e6).toFixed(1);
   const est=exportTier==='standard'?'PNG ~1–4 MB':exportTier==='high'?'PNG ~3–10 MB':'PNG ~8–25 MB';
-  let warn=(LOW_MEM&&exportTier==='max')?' · Max limited on this device':(exportTier==='max'?' · may be slow':'');
+  let warn=(LOW_MEM&&exportTier==='max')?' · Ultra limited on this device':(exportTier==='max'?' · may be slow':'');
   el.textContent=d[0]+'×'+d[1]+' · ~'+mp+' MP · '+est+warn;
+  ['standard','high','max'].forEach(tier=>{
+    const m=formatInfo(format);
+    let dim=(m.out&&m.out[tier])||m.logical;
+    if(LOW_MEM&&tier==='max')dim=m.out.high||dim;
+    document.querySelectorAll('[data-qdim="'+tier+'"]').forEach(n=>{n.textContent=dim[0]+'×'+dim[1]});
+  });
+  const uw=$('ultraWarn');
+  if(uw){const heavy=LOW_MEM||(d[0]*d[1]>8e6);uw.style.display=(heavy&&exportTier==='max')?'block':'none'}
+  document.querySelectorAll('.quality-opt').forEach(b=>b.classList.toggle('active',b.dataset.tier===exportTier));
+  document.querySelectorAll('.etier').forEach(b=>b.classList.toggle('active',b.dataset.tier===exportTier));
 }
 
 // Debounced draw — stops rapid slider spam from freezing the tab
@@ -1504,9 +1615,18 @@ document.querySelectorAll('.etier').forEach(btn=>{
   btn.onclick=()=>{
     exportTier=btn.dataset.tier||'standard';
     document.querySelectorAll('.etier').forEach(x=>x.classList.toggle('active',x===btn));
+    document.querySelectorAll('.quality-opt').forEach(x=>x.classList.toggle('active',x.dataset.tier===exportTier));
     updateExportMeta();
-    if(LOW_MEM&&exportTier==='max')toast('Max is capped on this device for stability');
-    else toast('Export: '+exportTier);
+    if(LOW_MEM&&exportTier==='max')toast('Ultra is capped on this device for stability');
+    else toast('Export: '+(exportTier==='max'?'Ultra':exportTier));
+  };
+});
+document.querySelectorAll('.quality-opt').forEach(btn=>{
+  btn.onclick=()=>{
+    exportTier=btn.dataset.tier||'standard';
+    document.querySelectorAll('.quality-opt').forEach(x=>x.classList.toggle('active',x===btn));
+    document.querySelectorAll('.etier').forEach(x=>x.classList.toggle('active',x.dataset.tier===exportTier));
+    updateExportMeta();
   };
 });
 choose('.pos','active',b=>{textPos=b.dataset.pos;textOffset=0});
@@ -1708,7 +1828,7 @@ renderLayoutOpts();
 function updateEmptyGuide(){const eg=$('emptyGuide');if(!eg)return;eg.classList.toggle('show',bgMode==='image'&&!img)}
 if($('egUpload'))$('egUpload').onclick=()=>$('fileInput').click();
 // Mobile sticky actions
-function openExportSheet(){const s=$('exportSheet');if(!s)return;s.classList.remove('hidden');s.setAttribute('aria-hidden','false')}
+function openExportSheet(){const s=$('exportSheet');if(!s)return;try{updateExportMeta()}catch(e){}s.classList.remove('hidden');s.setAttribute('aria-hidden','false')}
 function closeExportSheet(){const s=$('exportSheet');if(!s)return;s.classList.add('hidden');s.setAttribute('aria-hidden','true')}
 if($('mExport'))$('mExport').onclick=openExportSheet;
 if($('downloadBtn'))$('downloadBtn').onclick=openExportSheet;
@@ -2189,7 +2309,7 @@ if(bar){ctx.fillStyle=template==='editorial'?'rgba(10,12,15,.9)':'rgba(7,9,11,.8
   ctx.shadowColor='rgba(0,0,0,.65)';ctx.shadowBlur=10;
   ctx.fillText(cl,pad,H-28);
   ctx.textAlign='right';ctx.font='700 12px Inter';ctx.fillStyle='rgba(255,255,255,.8)';
-  ctx.fillText(brandStamp||'PRESSED.',W-pad,H-28);ctx.shadowBlur=0;
+  drawStampAt(ctx,W,H,28);ctx.shadowBlur=0;
 }}
 
 function drawPolaroid(W,H){ctx.fillStyle='#f4f1ea';ctx.fillRect(0,0,W,H);const margin=Math.round(Math.min(W,H)*0.06),capH=Math.round(H*0.16);const ix=margin,iy=margin,iw=W-margin*2,ih=H-margin*2-capH;coverRect(ix,iy,iw,ih);
@@ -2214,7 +2334,7 @@ ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.font='700 16px Inter';c
 function drawPoster(W,H){coverRect(0,0,W,H);const grad=ctx.createLinearGradient(0,H*0.35,0,H);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.55)');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
 const pad=Math.round(W*0.07),max=W-pad*2;let fs=Math.round(state.fontSize*1.7);ctx.font=fontString(fs);let lines=wrap(getQuoteText()||' ',max);while((lines.length*fs*state.lineSpace>H*.72||lines.some(l=>ctx.measureText(l).width>max))&&fs>20){fs--;ctx.font=fontString(fs);lines=wrap(getQuoteText()||' ',max)}let lh=fs*state.lineSpace,block=lines.length*lh;let y=H*0.52-block/2;ctx.textBaseline='middle';ctx.textAlign=align;let anchor=align==='left'?pad:align==='right'?W-pad:W/2;
 lines.forEach((line,i)=>{let yy=y+i*lh,tw=ctx.measureText(line).width;if(treatment==='highlight'){let x=align==='left'?anchor-14:align==='right'?anchor-tw-14:anchor-tw/2-14;ctx.fillStyle=highlight;ctx.fillRect(x,yy-lh/2+2,tw+28,lh-6);ctx.fillStyle=readableOn(highlight);ctx.fillText(line,anchor,yy)}else if(treatment==='outline'){ctx.lineWidth=Math.max(3,fs/14);ctx.strokeStyle='#000';ctx.strokeText(line,anchor,yy);ctx.fillStyle=textColor;ctx.fillText(line,anchor,yy)}else{ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=24;ctx.fillStyle=textColor;ctx.fillText(line,anchor,yy);ctx.shadowBlur=0}});
-ctx.textAlign=align;const ruleY=Math.min(H-64,y+block+40),ruleW=Math.min(220,max),rx=align==='left'?pad:align==='right'?W-pad-ruleW:W/2-ruleW/2;ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(rx,ruleY,ruleW,2);ctx.textBaseline='alphabetic';ctx.font='700 15px Inter';ctx.fillStyle='#fff';ctx.fillText(formatCreditLine(),anchor,ruleY+26);ctx.textAlign='right';ctx.font='700 12px Inter';ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText(brandStamp||'PRESSED.',W-pad,H-28);}
+ctx.textAlign=align;const ruleY=Math.min(H-64,y+block+40),ruleW=Math.min(220,max),rx=align==='left'?pad:align==='right'?W-pad-ruleW:W/2-ruleW/2;ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(rx,ruleY,ruleW,2);ctx.textBaseline='alphabetic';ctx.font='700 15px Inter';ctx.fillStyle='#fff';ctx.fillText(formatCreditLine(),anchor,ruleY+26);drawStampAt(ctx,W,H,28);}
 
 // Classic newspaper — cream stock, masthead, byline
 function drawNewspaper(W,H){
@@ -2702,7 +2822,7 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 // ============================================================
 // CONFIG: serialize / apply the editor's full state
 // ============================================================
-function currentConfig(){return{mode,quoteText:$('quoteText').value,captionText:$('captionText')?$('captionText').value:'',creditMain:$('creditMain').value,creditSub:$('creditSub').value,album:$('album').value,year:$('year').value,font:state.font,fontSize:state.fontSize,lineSpace:state.lineSpace,darkness:state.darkness,blur:state.blur,brightness:state.brightness,grain:state.grain,vignette:state.vignette,leak:state.leak,leakColor:state.leakColor,filmGrade,textColor,highlight,treatment,align,template,format,textPos,textOffset,creditFmt,layoutOpts:{...layoutOpts},freeLayout,layerPos:{main:{...layerPos.main},caption:{...layerPos.caption},credit:{...layerPos.credit}},layerOrder:[...layerOrder],layerVis:{...layerVis}}}
+function currentConfig(){return{mode,quoteText:$('quoteText').value,captionText:$('captionText')?$('captionText').value:'',creditMain:$('creditMain').value,creditSub:$('creditSub').value,album:$('album').value,year:$('year').value,font:state.font,fontSize:state.fontSize,lineSpace:state.lineSpace,darkness:state.darkness,blur:state.blur,brightness:state.brightness,grain:state.grain,vignette:state.vignette,leak:state.leak,leakColor:state.leakColor,filmGrade,textColor,highlight,treatment,align,template,format,textPos,textOffset,creditFmt,layoutOpts:{...layoutOpts},freeLayout,layerPos:{main:{...layerPos.main},caption:{...layerPos.caption},credit:{...layerPos.credit}},layerOrder:[...layerOrder],layerVis:{...layerVis},brandStamp:brandStamp,artCredit:Object.assign({},artCredit),artStamp:Object.assign({},artStamp)}}
 function applyConfig(cfg){
   if(cfg.mode){mode=cfg.mode;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.mode===mode));$('nowFields').classList.toggle('hidden',mode!=='now')}
   if(cfg.quoteText!==undefined)$('quoteText').value=cfg.quoteText;
@@ -2730,6 +2850,11 @@ function applyConfig(cfg){
   if(cfg.template){template=cfg.template;syncTplGrid();try{renderLayoutOpts()}catch(e){}}
   if(cfg.layoutOpts){Object.assign(layoutOpts,cfg.layoutOpts);try{renderLayoutOpts()}catch(e){}}
   if(cfg.format){format=cfg.format;document.querySelectorAll('.format').forEach(x=>x.classList.toggle('active',x.dataset.format===format));resizeCanvas()}
+  if(cfg.brandStamp!=null){brandStamp=cfg.brandStamp;if($('brandStamp'))$('brandStamp').value=brandStamp}
+  if(cfg.artCredit)Object.assign(artCredit,cfg.artCredit);
+  if(cfg.artStamp)Object.assign(artStamp,cfg.artStamp);
+  try{syncArtifactUI()}catch(e){}
+
   if(cfg.textPos){textPos=cfg.textPos;document.querySelectorAll('.pos').forEach(x=>x.classList.toggle('active',x.dataset.pos===textPos))}
   if(cfg.textOffset!==undefined)textOffset=cfg.textOffset;
   if(cfg.freeLayout!==undefined)freeLayout=!!cfg.freeLayout;
@@ -3550,7 +3675,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v20';
+      const CACHE='pressed-v21';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
