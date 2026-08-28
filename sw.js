@@ -1,4 +1,4 @@
-const CACHE='pressed-v21';
+const CACHE='pressed-v22';
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
   self.skipWaiting();

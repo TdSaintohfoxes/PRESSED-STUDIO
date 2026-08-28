@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="theme-color" content="#0a0910">
+<meta name="theme-color" content="#0b0a12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -159,6 +159,286 @@ body.show-m-actions .app{padding-bottom:calc(150px + env(safe-area-inset-bottom,
 .onboard-card .btn{width:100%;min-height:46px;margin-top:8px}
 .backup-actions{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 
+
+
+/* ========== PRESSED UI Overhaul v22 — soft depth, card system ========== */
+:root{
+  --bg:#0b0a12;
+  --bg2:#12101c;
+  --panel:#161422;
+  --panel2:#1e1b2c;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.12);
+  --text:#f7f5fc;
+  --muted:#9b94b3;
+  --accent:#7c6cf0;
+  --accent2:#a99bff;
+  --accent-glow:rgba(124,108,240,.35);
+  --danger:#ff6b8a;
+  --radius:20px;
+  --radius-sm:14px;
+  --radius-xs:10px;
+  --shadow:0 12px 40px rgba(0,0,0,.35);
+  --shadow-sm:0 4px 16px rgba(0,0,0,.22);
+}
+meta[name="theme-color"]{content:#0b0a12}
+body{
+  background:
+    radial-gradient(ellipse 90% 55% at 10% -15%, rgba(124,108,240,.22), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 10%, rgba(90,70,180,.12), transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, rgba(60,40,120,.1), transparent 50%),
+    var(--bg) !important;
+  color:var(--text);
+  font-family:Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.app{padding:12px 14px 100px;max-width:1200px}
+/* Top bar — glass */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 4px 14px;
+  position:sticky;top:0;z-index:40;
+  background:linear-gradient(180deg,rgba(11,10,18,.92),rgba(11,10,18,.75));
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid transparent;
+}
+.brand{display:flex;align-items:center;gap:10px;font:700 26px 'Playfair Display',serif;letter-spacing:-1px}
+.brand-mark{width:32px;height:32px;border-radius:10px;box-shadow:0 4px 14px var(--accent-glow)}
+.brand i{color:var(--accent2);font-style:normal}
+.tag{font:600 9px Inter,sans-serif;letter-spacing:2.2px;text-transform:uppercase;color:var(--muted);margin-top:2px;opacity:.9}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.undo-bar{display:flex;gap:6px;padding:4px;background:rgba(255,255,255,.04);border-radius:999px;border:1px solid var(--line)}
+.undo-bar .btn{border-radius:999px;min-width:40px;padding:8px;border:0;background:transparent}
+/* Floating bottom nav — reference: soft pill dock */
+.mainnav{
+  position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  z-index:60;display:flex;gap:4px;padding:8px;
+  background:rgba(22,20,34,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--line2);border-radius:22px;
+  box-shadow:0 16px 48px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+  margin:0;overflow:visible;
+}
+.navbtn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  min-height:52px;border:0;background:transparent;color:var(--muted);
+  border-radius:16px;padding:8px 4px;font:600 10px Inter,sans-serif;
+  transition:background .18s,color .18s,transform .12s;
+}
+.navbtn .navico{font-size:18px;line-height:1;opacity:.85}
+.navbtn.active{
+  background:linear-gradient(145deg,var(--accent),#5b4dd6)!important;
+  color:#fff!important;
+  box-shadow:0 6px 20px var(--accent-glow);
+}
+.navbtn.active .navico{opacity:1}
+.navbtn:active{transform:scale(.96)}
+/* Cards & panels */
+.panel{
+  background:linear-gradient(180deg,rgba(30,27,44,.95),rgba(22,20,34,.98));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  max-height:calc(100dvh - 160px);
+}
+.studio{
+  background:linear-gradient(180deg,rgba(26,23,38,.6),rgba(16,14,24,.4));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  padding:14px;
+}
+.card-wrap{
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+  background:#0a0910;
+}
+.section{
+  padding:18px 18px 16px;
+  border-bottom:1px solid var(--line);
+}
+.section:last-child{border-bottom:0}
+.section h3{
+  font:700 11px Inter,sans-serif;
+  letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--accent2);margin:0 0 14px;opacity:.95;
+}
+/* Editor tabs — segmented control style */
+.edtabs{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  padding:12px;position:sticky;top:0;z-index:20;
+  background:rgba(18,16,28,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.edtab{
+  border:0;background:rgba(255,255,255,.04);color:var(--muted);
+  border-radius:12px;padding:12px 8px;
+  font:700 11px Inter,sans-serif;letter-spacing:.5px;text-transform:uppercase;
+  transition:all .18s;
+}
+.edtab.active{
+  background:linear-gradient(135deg,var(--accent),#6b5ce7)!important;
+  color:#fff!important;
+  box-shadow:0 4px 18px var(--accent-glow);
+}
+/* Buttons */
+.btn{
+  border-radius:12px;min-height:44px;padding:10px 16px;
+  font:700 12px Inter,sans-serif;letter-spacing:.2px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--text);
+  transition:transform .12s,box-shadow .18s,filter .12s,background .15s;
+}
+.btn:active{transform:scale(.97)}
+.btn.primary{
+  background:linear-gradient(135deg,var(--accent) 0%,#5b4dd6 100%)!important;
+  border:0!important;color:#fff!important;
+  box-shadow:0 8px 24px var(--accent-glow);
+}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.secondary{background:rgba(255,255,255,.05);border-color:var(--line2)}
+.btn.danger{background:rgba(255,107,138,.12);border-color:rgba(255,107,138,.35);color:#ff8fa3}
+/* Inputs — soft fields */
+input[type=text],input[type=url],input[type=password],textarea,select{
+  width:100%;background:rgba(0,0,0,.28)!important;
+  border:1px solid var(--line)!important;color:var(--text)!important;
+  border-radius:12px!important;padding:12px 14px!important;
+  font:13px Inter,sans-serif!important;
+  transition:border-color .15s,box-shadow .15s;
+}
+input:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+textarea{min-height:120px;line-height:1.55}
+label{font:600 10px Inter,sans-serif;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:7px}
+/* Presets / chips — pill style */
+.preset,.chip{
+  border-radius:11px!important;border:1px solid var(--line)!important;
+  background:rgba(255,255,255,.04)!important;color:var(--text)!important;
+  font:600 11px Inter,sans-serif!important;
+  transition:all .15s;
+}
+.preset.active,.chip.active{
+  background:rgba(124,108,240,.2)!important;
+  border-color:var(--accent)!important;
+  color:#fff!important;
+  box-shadow:0 0 0 1px rgba(124,108,240,.25);
+}
+.swatch{border-radius:50%!important;border:2px solid transparent!important}
+.swatch.active{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent-glow)}
+/* Template cards */
+.tpl-card{
+  border-radius:14px!important;border:1px solid var(--line)!important;
+  background:rgba(0,0,0,.25)!important;
+  overflow:hidden;transition:transform .15s,border-color .15s,box-shadow .15s;
+}
+.tpl-card.active{border-color:var(--accent)!important;box-shadow:0 8px 28px var(--accent-glow)}
+.tpl-card:active{transform:scale(.98)}
+/* Quickstart row */
+.quickstart{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.quickstart .btn{border-radius:999px;min-height:38px;padding:8px 14px;font-size:11px}
+/* Auth screen — soft card */
+.auth-screen{
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(124,108,240,.25), transparent 55%),
+    var(--bg)!important;
+}
+.auth-card, .auth-box, .auth-panel{
+  background:linear-gradient(180deg,rgba(30,27,44,.95),rgba(18,16,28,.98));
+  border:1px solid var(--line2);border-radius:24px;
+  box-shadow:var(--shadow);padding:28px 24px;
+}
+.auth-brand{font:700 32px 'Playfair Display',serif;letter-spacing:-1px}
+/* Library / looks cards */
+.lib-card, .look-card, .mood-card{
+  border-radius:16px!important;border:1px solid var(--line)!important;
+  background:var(--panel)!important;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  transition:transform .15s,box-shadow .15s;
+}
+.lib-card:active, .look-card:active{transform:scale(.98)}
+/* Mobile action bar */
+.m-actions{
+  left:12px;right:12px;
+  bottom:calc(74px + env(safe-area-inset-bottom,0px));
+  border-radius:18px;padding:10px;
+  background:rgba(22,20,34,.94);border:1px solid var(--line2);
+  backdrop-filter:blur(16px);box-shadow:var(--shadow);
+}
+/* Export sheet */
+.export-sheet-panel{
+  border-radius:24px 24px 0 0!important;
+  background:linear-gradient(180deg,#1e1b2c,#161422)!important;
+  border:1px solid var(--line2)!important;
+  padding:16px 18px calc(20px + env(safe-area-inset-bottom,0px))!important;
+}
+.export-sheet-handle{background:rgba(255,255,255,.15)!important;width:44px!important}
+.quality-opt{
+  border-radius:14px!important;background:rgba(0,0,0,.25)!important;
+  border:1px solid var(--line)!important;
+}
+.quality-opt.active{
+  border-color:var(--accent)!important;
+  background:rgba(124,108,240,.15)!important;
+  box-shadow:0 0 0 1px rgba(124,108,240,.2);
+}
+/* Artifact blocks */
+.artifact-block{
+  border-radius:14px!important;background:rgba(0,0,0,.22)!important;
+  border:1px solid var(--line)!important;
+}
+/* Collapsible */
+.coll-head{border-radius:12px;padding:6px 4px;transition:background .15s}
+.coll-head:hover{background:rgba(124,108,240,.08)}
+.coll-body{animation:pressIn .2s ease}
+@keyframes pressIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.adv-toggle{
+  border-radius:12px!important;background:rgba(0,0,0,.28)!important;
+  border:1px solid var(--line)!important;
+}
+.adv-toggle.open{border-color:var(--accent)!important;background:rgba(124,108,240,.1)!important}
+/* Toast */
+.toast{
+  border-radius:14px!important;
+  background:rgba(22,20,34,.96)!important;
+  border:1px solid var(--line2)!important;
+  box-shadow:var(--shadow)!important;
+  backdrop-filter:blur(12px);
+}
+/* Hint under canvas */
+.hint{color:var(--muted);font-size:11px;text-align:center;margin-top:10px;letter-spacing:.3px}
+/* Empty guide */
+.empty-guide{
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);
+  border-radius:16px;padding:20px;
+}
+.eg-step{display:flex;align-items:center;gap:10px;margin-bottom:10px;font:600 13px Inter,sans-serif;color:var(--text)}
+.eg-step span{
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),#5b4dd6);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font:700 11px Inter,sans-serif;
+}
+/* Format grid buttons */
+.format-grid .preset{border-radius:14px!important;min-height:60px;padding:12px!important}
+.size-grid .preset{border-radius:14px!important}
+/* Desktop layout breathing room */
+@media(min-width:900px){
+  .layout{gap:24px}
+  .panel{border-radius:24px}
+  .studio{border-radius:24px;padding:20px}
+  .mainnav{position:relative;left:auto;right:auto;bottom:auto;margin:0 0 18px;max-width:520px}
+}
+@media(max-width:760px){
+  .app{padding:8px 10px 110px}
+  .topbar{padding:calc(8px + env(safe-area-inset-top,0px)) 2px 10px}
+  .brand{font-size:22px}
+  .panel{max-height:none;border-radius:18px;margin-bottom:12px}
+  .studio{border-radius:18px;padding:10px}
+}
+/* Scrollbar subtle */
+.scroll::-webkit-scrollbar{width:6px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:99px}
 
 /* v21 identity */
 .brand{display:flex;align-items:center;gap:10px}
@@ -845,7 +1125,7 @@ Everybody needs you</textarea></div>
 <button class="btn secondary" id="shareXBtn">Share to X</button>
 <button class="btn secondary" id="saveLibBtn">Save</button>
 </div>
-<div class="hint">Tip: Content → Style → Layout. Quality is in Export. Or try ✦ Surprise Me.</div>
+<div class="hint">Content → Style → Layout · Export for quality · ✦ Surprise Me</div>
 </main></div>
 
 <!-- Mobile sticky action bar (above bottom nav) -->
@@ -3675,7 +3955,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v21';
+      const CACHE='pressed-v22';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
