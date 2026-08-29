@@ -1482,7 +1482,12 @@ Everybody needs you</textarea></div>
 <div class="save-indicator" id="saveIndicator">DRAFT SAVED</div>
 
 <script>
-(()=>{const $=id=>document.getElementById(id),canvas=$('card'),ctx=canvas.getContext('2d');let img=null,mode='lyrics',align='left',treatment='highlight',template='genius',format='square',textColor='#ffffff',highlight='#ffffff',textPos='middle',textOffset=0,filmGrade='none',creditFmt='quoted',showSafeGuides=false,bgMode='image',bgColor='#0a0d12',bgGrad='night',textOpacity=1,letterSpacing=0,textCase='as',textStroke=0,textShadow=0;
+(()=>{const $=id=>document.getElementById(id);
+const canvas=$('card');
+if(!canvas){console.error('PRESSED: #card canvas missing');return;}
+const ctx=canvas.getContext('2d',{alpha:false});
+if(!ctx){console.error('PRESSED: 2d context unavailable');return;}
+let img=null,mode='lyrics',align='left',treatment='highlight',template='genius',format='square',textColor='#ffffff',highlight='#ffffff',textPos='middle',textOffset=0,filmGrade='none',creditFmt='quoted',showSafeGuides=false,bgMode='image',bgColor='#0a0d12',bgGrad='night',textOpacity=1,letterSpacing=0,textCase='as',textStroke=0,textShadow=0;
 // Free-move layer system (normalized 0–1 coords so format switches stay stable)
 let freeLayout=false,selectedLayer='main',layerOrder=['main','caption','credit'];
 let layerPos={main:{nx:0.5,ny:0.42},caption:{nx:0.5,ny:0.72},credit:{nx:0.08,ny:0.9}};
@@ -1601,13 +1606,13 @@ function acctKey(base){return currentUser?base+'__'+currentUser.id:base}
 function showAuth(on){
   try{
     const a=$('authScreen'),app=$('appShell');
-    if(a)a.classList.toggle('hidden',!on);
+    if(a){a.classList.toggle('hidden',!on);a.style.pointerEvents=on?'auto':'none'}
     if(app){
       app.style.visibility=on?'hidden':'visible';
-      // Ensure app is interactable when auth is dismissed
-      if(!on){app.style.pointerEvents='auto';app.removeAttribute('aria-hidden')}
+      if(!on){app.style.pointerEvents='auto';app.style.opacity='1';app.removeAttribute('aria-hidden')}
       else{app.setAttribute('aria-hidden','true')}
     }
+    if(!on){document.body.style.overflow='';} else {document.body.style.overflow='hidden'}
     document.body.classList.toggle('authed-out',!!on);
     if(on){try{if(typeof renderAuthAccounts==='function')renderAuthAccounts()}catch(e){}}
   }catch(e){}
@@ -1839,7 +1844,8 @@ if($('settingsDeleteAcct'))$('settingsDeleteAcct').onclick=deleteAccount;
 wirePasswordToggle('loginPass','loginEye');
 wirePasswordToggle('signupPass','signupEye');
 if($('guestBtn'))$('guestBtn').onclick=()=>{
-  currentUser=null;setSession(null);showAuth(false);refreshSettingsUI();
+  currentUser=null;setSession(null);try{localStorage.setItem('pressed_guest_ok','1')}catch(e){}
+  showAuth(false);try{refreshSettingsUI()}catch(e){}
   toast('Guest mode — projects stay on this device');
 };
 if($('accountSaveStamp'))$('accountSaveStamp').onclick=()=>{
@@ -1893,9 +1899,15 @@ document.querySelectorAll('.set-fmt').forEach(b=>b.onclick=()=>{
         return;
       }
     }
+    // Prefer guest if user already dismissed auth once this browser
+    if(localStorage.getItem('pressed_guest_ok')==='1'){
+      currentUser=null;showAuth(false);
+      try{refreshSettingsUI()}catch(e){}
+      return;
+    }
     showAuth(true);
   }catch(e){
-    try{showAuth(true)}catch(_){}
+    try{currentUser=null;showAuth(false)}catch(_){}
   }
 })();
 
@@ -2052,7 +2064,7 @@ function updateExportMeta(){
 // Debounced draw — stops rapid slider spam from freezing the tab
 let _drawTimer=null,_drawPending=false;
 const _drawNow=()=>{_drawPending=false;_realDraw()};
-function scheduleDraw(){if(_drawPending)return;_drawPending=true;cancelAnimationFrame(_drawTimer);_drawTimer=requestAnimationFrame(_drawNow)}
+function scheduleDraw(){if(_videoExport||_drawPending)return;_drawPending=true;cancelAnimationFrame(_drawTimer);_drawTimer=requestAnimationFrame(_drawNow)}
 const bindRange=(id,key,out,fmt=v=>v)=>{const e=$(id);if(!e)return;const f=()=>{state[key]=key==='darkness'||key==='grain'||key==='vignette'||key==='leak'?+e.value/100:key==='brightness'?+e.value/100:key==='lineSpace'?+e.value/100:+e.value;$(out).textContent=fmt(e.value);draw()};e.oninput=f;f()};bindRange('fontSize','fontSize','fontSizeOut');bindRange('lineSpace','lineSpace','lineSpaceOut',v=>v+'%');bindRange('darkness','darkness','darknessOut');bindRange('blur','blur','blurOut');bindRange('brightness','brightness','brightnessOut');bindRange('grain','grain','grainOut');bindRange('vignette','vignette','vignetteOut');bindRange('leak','leak','leakOut');
 if($('leakColor'))$('leakColor').oninput=e=>{state.leakColor=e.target.value;draw()};
 $('fontSelect').onchange=e=>{state.font=e.target.value;syncFontGrid();try{updatePairChip()}catch(err){};draw()};['quoteText','creditMain','creditSub','album','year'].forEach(id=>$(id).oninput=draw);
@@ -2659,7 +2671,8 @@ function coverRect(x,y,w,h){
     return;
   }
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
-  ctx.filter=`brightness(${state.brightness}) blur(${state.blur}px)`;
+  const _blurPx=_videoExport?state.blur:Math.min(state.blur||0, LOW_MEM?4:8);
+  ctx.filter=`brightness(${state.brightness}) blur(${_blurPx}px)`;
   let s=Math.max(w/img.width,h/img.height),iw=img.width*s,ih=img.height*s;
   let kb=typeof window.__kenBurnsT==='number'?window.__kenBurnsT:null;
   if(kb!=null){
@@ -2697,8 +2710,17 @@ if(freeLayout&&selectedLayer){
 if(showSafeGuides)try{/* guides drawn elsewhere */}catch(e){}
 try{runDesignTips(W,H)}catch(e){}
 try{checkContrast()}catch(e){}}
-function draw(){if(_videoExport)return;scheduleDraw()}
-function drawImmediate(){_drawPending=false;cancelAnimationFrame(_drawTimer);_realDraw()}
+let _drawDepth=0;
+function draw(){if(_videoExport||_drawDepth>0)return;scheduleDraw()}
+function drawImmediate(){
+  if(_drawDepth>0)return;
+  _drawPending=false;cancelAnimationFrame(_drawTimer);
+  try{_drawDepth++;_realDraw()}catch(e){console.warn('draw',e)}finally{_drawDepth--}
+}
+// Safety: never leave export flag stuck (would freeze live preview)
+window.addEventListener('pageshow',()=>{_videoExport=false;window.__kenBurnsT=null});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){_videoExport=false}});
+
 
 function textBlockY(H,block,barH){
   if(freeLayout&&layerPos.main){
@@ -4333,7 +4355,11 @@ if($('libAddColl'))$('libAddColl').onclick=()=>{
 // CONTRAST GUARD — gentle suggestion when text may wash out
 // ============================================================
 let contrastNoteTimer=null;
+let _contrastT=0;
 function checkContrast(){
+  const now=performance.now();
+  if(now-_contrastT<480)return;
+  _contrastT=now;
   const box=$('contrastWarn');
   if(!box){
     // fallback toast path
@@ -4585,7 +4611,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v28';
+      const CACHE='pressed-v29';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -4913,6 +4939,9 @@ try{setTimeout(tryOpenZineFromURL,400)}catch(e){}
 
 renderDaily();renderMoods();renderLibrary();renderCollections();renderLookbook();renderRecents();
 updateEmptyGuide();updateSafeOverlay();
+try{closeExportSheet()}catch(e){}
+try{_videoExport=false}catch(e){}
+
 if(document.fonts)document.fonts.ready.then(()=>{drawImmediate();updateEmptyGuide()});else{drawImmediate();updateEmptyGuide()}
 })();
 </script></body></html>
