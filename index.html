@@ -825,9 +825,6 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 <button class="btn secondary" id="qsZine">Zine</button>
 <button class="btn secondary" id="qsGenius">Lyric card</button>
 <button class="btn secondary" id="qsFilm">Film look</button>
-<button class="btn secondary" id="qsFold">Fold pull-quote</button>
-<button class="btn secondary" id="qsYT">Lena Vale title</button>
-<button class="btn secondary" id="qsPunk">Essay thumb</button>
 <button class="btn secondary" id="qsPlain">Text only</button>
 <button class="btn" id="qsSurprise">✦ Surprise</button>
 </div>
@@ -907,8 +904,6 @@ Everybody needs you</textarea></div>
 <button type="button" class="chip" data-cat="matchday">Matchday</button>
 <button type="button" class="chip" data-cat="games">Games</button>
 <button type="button" class="chip" data-cat="objects">Objects</button>
-<button type="button" class="chip" data-cat="fold">Fold</button>
-<button type="button" class="chip" data-cat="youtube">YouTube</button>
 </div>
 <div class="tpl-grid" id="tplGrid"></div>
 </div>
@@ -1487,7 +1482,7 @@ const canvas=$('card');
 if(!canvas){console.error('PRESSED: #card canvas missing');return;}
 const ctx=canvas.getContext('2d',{alpha:false});
 if(!ctx){console.error('PRESSED: 2d context unavailable');return;}
-let img=null,mode='lyrics',align='left',treatment='highlight',template='genius',format='square',textColor='#ffffff',highlight='#ffffff',textPos='middle',textOffset=0,filmGrade='none',creditFmt='quoted',showSafeGuides=false,bgMode='image',bgColor='#0a0d12',bgGrad='night',textOpacity=1,letterSpacing=0,textCase='as',textStroke=0,textShadow=0;
+let _videoExport=false,_drawDepth=0;let img=null,mode='lyrics',align='left',treatment='highlight',template='genius',format='square',textColor='#ffffff',highlight='#ffffff',textPos='middle',textOffset=0,filmGrade='none',creditFmt='quoted',showSafeGuides=false,bgMode='image',bgColor='#0a0d12',bgGrad='night',textOpacity=1,letterSpacing=0,textCase='as',textStroke=0,textShadow=0;
 // Free-move layer system (normalized 0–1 coords so format switches stay stable)
 let freeLayout=false,selectedLayer='main',layerOrder=['main','caption','credit'];
 let layerPos={main:{nx:0.5,ny:0.42},caption:{nx:0.5,ny:0.72},credit:{nx:0.08,ny:0.9}};
@@ -2185,10 +2180,7 @@ const TPL_META={
   bootscreen:{name:'Boot screen',desc:'Press start',cls:'pv-boot',cat:'games'},
   advisory:{name:'Parental Advisory',desc:'Explicit sticker',cls:'pv-pa',cat:'objects'},
   album:{name:'Album cover',desc:'LP / CD face',cls:'pv-album',cat:'objects'}
-,
-  fold:{name:'The Fold',desc:'NME-style pull-quote · byline',cls:'pv-news',cat:'fold'},
-  yttitle:{name:'Lena Vale Files',desc:'Horror title card · vignette',cls:'pv-minimal',cat:'youtube'},
-  ytpunk:{name:'Essay · Punk',desc:'High-contrast video essay',cls:'pv-poster',cat:'youtube'}};
+};
 let tplCat='all';
 let layoutOpts={
   ledColor:'amber',cardFoil:true,cardNum:'14',cardTeam:'HOME',
@@ -2196,38 +2188,8 @@ let layoutOpts={
   advisoryOn:true,albumSpine:true,scarfPos:'middle',programmeAccent:'#8B1E2D'
 };
 
-function applyProductionLook(key){
-  // Fold / YouTube branded starting points (still editable Looks)
-  if(key==='fold'){
-    bgMode=img?'image':'gradient';bgGrad='paper';
-    state.font='Playfair Display';treatment='plain';textColor='#111111';align='left';
-    creditFmt='dash';brandStamp='The Fold';
-    artCredit.font='Inter';artStamp.font='Inter';artStamp.corner='br';
-    filmGrade='none';state.grain=0.08;state.vignette=0.1;
-    if($('creditMain')&&!$('creditMain').value)$('creditMain').value='Words by Author';
-    if($('creditSub')&&!$('creditSub').value)$('creditSub').value='The Fold';
-  }else if(key==='yttitle'){
-    bgMode=img?'image':'gradient';bgGrad='night';
-    state.font='Special Elite';treatment='plain';textColor='#f2ebe0';align='center';
-    filmGrade='night';state.grain=0.22;state.vignette=0.42;state.darkness=0.45;
-    brandStamp='THE LENA VALE FILES';
-    format=format==='square'?'ytthumb':format;
-    if($('creditMain')&&!$('creditMain').value)$('creditMain').value='THE LENA VALE FILES';
-    if($('creditSub')&&!$('creditSub').value)$('creditSub').value='Episode title';
-  }else if(key==='ytpunk'){
-    bgMode=img?'image':'solid';bgColor='#0a0a0a';
-    state.font='Anton';treatment='plain';textColor='#ffffff';align='center';
-    filmGrade='bw';state.grain=0.12;state.vignette=0.12;state.darkness=0.25;
-    brandStamp='ESSAY';
-    format=format==='square'?'ytthumb':format;
-  }
-  if($('brandStamp'))$('brandStamp').value=brandStamp;
-  try{localStorage.setItem('pressed_brand_v1',brandStamp)}catch(e){}
-  document.querySelectorAll('.grade').forEach(x=>x.classList.toggle('active',x.dataset.grade===filmGrade));
-  if($('grain')){$('grain').value=Math.round((state.grain||0)*100);$('grainOut').textContent=Math.round((state.grain||0)*100)}
-  if($('vignette')){$('vignette').value=Math.round((state.vignette||0)*100);$('vignetteOut').textContent=Math.round((state.vignette||0)*100)}
-  try{syncFontGrid();syncArtifactUI();resizeCanvas()}catch(e){}
-}
+function applyProductionLook(key){/* Fold/YT presets removed */}
+
 
 function buildTplGrid(){
   const box=$('tplGrid');if(!box)return;box.innerHTML='';
@@ -2272,10 +2234,7 @@ function buildTplGrid(){
         album:{treatment:'plain',align:'left',font:'Anton'},
         scarf:{treatment:'plain',align:'center',font:'Anton'},
         programme:{treatment:'plain',align:'left',font:'Playfair Display',textColor:'#1a1410'}
-      ,
-        fold:{treatment:'plain',align:'left',font:'Playfair Display',textColor:'#111111',textPos:'middle'},
-        yttitle:{treatment:'plain',align:'center',font:'Special Elite',textColor:'#f2ebe0',textPos:'middle'},
-        ytpunk:{treatment:'plain',align:'center',font:'Anton',textColor:'#ffffff',textPos:'middle'}};
+      };
       const s=smart[key];
       if(s){
         if(s.treatment){treatment=s.treatment;document.querySelectorAll('.style').forEach(x=>x.classList.toggle('active',x.dataset.style===treatment))}
@@ -2525,7 +2484,7 @@ function getGrainTile(){
   for(let i=0;i<d.length;i+=4){const v=Math.random()*255|0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
   octx.putImageData(id,0,0);_grainTile=oc;return oc;
 }
-let _videoGrainOverlay=null,_videoExport=false;
+let _videoGrainOverlay=null;/* _videoExport declared early */
 function applyGrain(x,y,w,h){
   if(state.grain<=0.01)return;
   // During video: one stretched grain pass (frozen look, far cheaper than per-frame tiling)
@@ -2697,7 +2656,7 @@ if(freeLayout){
   cover(W,H);
   drawFreeLayers(W,H);
 }else{
-  const drawers={genius:drawGenius,polaroid:drawPolaroid,ticket:drawTicket,poster:drawPoster,newspaper:drawNewspaper,tradecard:drawTradeCard,led:drawLED,programme:drawProgramme,scarf:drawScarf,cartridge:drawCartridge,dialogue:drawDialogue,bootscreen:drawBoot,advisory:drawAdvisory,album:drawAlbum,fold:drawNewspaper,yttitle:drawClassic,ytpunk:drawPoster};
+  const drawers={genius:drawGenius,polaroid:drawPolaroid,ticket:drawTicket,poster:drawPoster,newspaper:drawNewspaper,tradecard:drawTradeCard,led:drawLED,programme:drawProgramme,scarf:drawScarf,cartridge:drawCartridge,dialogue:drawDialogue,bootscreen:drawBoot,advisory:drawAdvisory,album:drawAlbum};
   if(drawers[template])drawers[template](W,H);else drawClassic(W,H);
   // Still register a hit area on main text for easy grab → free layout
   registerMainTextHit(W,H);
@@ -2710,7 +2669,6 @@ if(freeLayout&&selectedLayer){
 if(showSafeGuides)try{/* guides drawn elsewhere */}catch(e){}
 try{runDesignTips(W,H)}catch(e){}
 try{checkContrast()}catch(e){}}
-let _drawDepth=0;
 function draw(){if(_videoExport||_drawDepth>0)return;scheduleDraw()}
 function drawImmediate(){
   if(_drawDepth>0)return;
@@ -2718,8 +2676,8 @@ function drawImmediate(){
   try{_drawDepth++;_realDraw()}catch(e){console.warn('draw',e)}finally{_drawDepth--}
 }
 // Safety: never leave export flag stuck (would freeze live preview)
-window.addEventListener('pageshow',()=>{_videoExport=false;window.__kenBurnsT=null});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){_videoExport=false}});
+try{window.addEventListener('pageshow',()=>{_videoExport=false;window.__kenBurnsT=null})}catch(e){}
+try{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){_videoExport=false}})}catch(e){}
 
 
 function textBlockY(H,block,barH){
@@ -3340,16 +3298,6 @@ function productionFilename(ext){
   const main=($('creditMain')&&$('creditMain').value)||'';
   const sub=($('creditSub')&&$('creditSub').value)||'';
   const q=($('quoteText')&&$('quoteText').value||'').split('\n')[0];
-  if(template==='fold'||(brandStamp||'').toLowerCase().includes('fold')){
-    return 'fold-'+slug(sub||main||q)+'-'+ds+'.'+ext;
-  }
-  if(template==='yttitle'||(brandStamp||'').toUpperCase().includes('LENA VALE')){
-    const ep=slug(sub||main||'ep');
-    return 'lenavale-'+ep+'-thumbnail.'+ext;
-  }
-  if(template==='ytpunk'){
-    return 'essay-'+slug(main||q||'thumb')+'-'+ds+'.'+ext;
-  }
   const ser=getActiveSeries&&getActiveSeries();
   if(ser)return slug(ser.name)+'-'+slug(sub||main||q)+'.'+ext;
   return 'pressed-'+format+'-'+(exportTier||'std')+'.'+ext;
@@ -3762,22 +3710,6 @@ if($('qsPlain'))$('qsPlain').onclick=()=>{
   applyConfig({template:'minimal',treatment:'plain',textColor:'#ffffff',align:'center',textPos:'middle',font:'Playfair Display',fontSize:44,darkness:0,blur:0,brightness:1,grain:0.08,vignette:0.15,leak:0,filmGrade:'none',mode:'quote'});
   textOffset=0;syncBgUI();updateEmptyGuide();draw();
   toast('Text-only card — type your line');
-};
-
-if($('qsFold'))$('qsFold').onclick=()=>{
-  img=null;bgMode='gradient';bgGrad='paper';
-  applyConfig({template:'fold',treatment:'plain',textColor:'#111111',align:'left',font:'Playfair Display',filmGrade:'none',format:format});
-  applyProductionLook('fold');draw();toast('Fold pull-quote ready');
-};
-if($('qsYT'))$('qsYT').onclick=()=>{
-  img=null;bgMode='gradient';bgGrad='night';format='ytthumb';
-  applyConfig({template:'yttitle',treatment:'plain',textColor:'#f2ebe0',align:'center',font:'Special Elite',filmGrade:'night',format:'ytthumb'});
-  applyProductionLook('yttitle');draw();toast('Lena Vale title card');
-};
-if($('qsPunk'))$('qsPunk').onclick=()=>{
-  img=null;bgMode='solid';bgColor='#0a0a0a';format='ytthumb';
-  applyConfig({template:'ytpunk',treatment:'plain',textColor:'#ffffff',align:'center',font:'Anton',filmGrade:'bw',format:'ytthumb'});
-  applyProductionLook('ytpunk');draw();toast('Essay thumbnail');
 };
 
 if($('qsSurprise'))$('qsSurprise').onclick=()=>{if(typeof surpriseMe==='function')surpriseMe();else if($('surpriseBtn'))$('surpriseBtn').click()};
@@ -4611,7 +4543,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v29';
+      const CACHE='pressed-v30';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -4735,7 +4667,7 @@ function renderSeriesBar(){
   });
 }
 if($('seriesNew'))$('seriesNew').onclick=()=>{
-  const name=prompt('Series name (e.g. Lena Vale Files, The Fold Issue 12):');
+  const name=prompt('Series name (e.g. Summer mixtape, Issue 03):');
   if(!name)return;
   const arr=loadSeries();
   const id='ser'+Date.now();
@@ -4937,12 +4869,20 @@ try{setTimeout(tryOpenZineFromURL,400)}catch(e){}
   }catch(e){}
 })();
 
-renderDaily();renderMoods();renderLibrary();renderCollections();renderLookbook();renderRecents();
-updateEmptyGuide();updateSafeOverlay();
+try{renderDaily()}catch(e){console.warn(e)}
+try{renderMoods()}catch(e){console.warn(e)}
+try{renderLibrary()}catch(e){console.warn(e)}
+try{renderCollections()}catch(e){console.warn(e)}
+try{renderLookbook()}catch(e){console.warn(e)}
+try{renderRecents()}catch(e){console.warn(e)}
+try{updateEmptyGuide()}catch(e){}
+try{updateSafeOverlay()}catch(e){}
 try{closeExportSheet()}catch(e){}
 try{_videoExport=false}catch(e){}
-
-if(document.fonts)document.fonts.ready.then(()=>{drawImmediate();updateEmptyGuide()});else{drawImmediate();updateEmptyGuide()}
+try{
+  if(document.fonts)document.fonts.ready.then(()=>{try{drawImmediate();updateEmptyGuide()}catch(e){}});
+  else {drawImmediate();updateEmptyGuide()}
+}catch(e){try{drawImmediate()}catch(_){}}
 })();
 </script></body></html>
 
