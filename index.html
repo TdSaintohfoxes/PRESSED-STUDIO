@@ -962,6 +962,28 @@ Everybody needs you</textarea></div>
 <div class="coll-body">
 <div class="row"><div class="field"><label>Darkness</label><div class="range-row"><input id="darkness" type="range" min="0" max="90" value="35"><output id="darknessOut">35</output></div></div><div class="field"><label>Blur</label><div class="range-row"><input id="blur" type="range" min="0" max="20" value="0"><output id="blurOut">0</output></div></div></div>
 <div class="field"><label>Brightness</label><div class="range-row"><input id="brightness" type="range" min="50" max="150" value="100"><output id="brightnessOut">100</output></div></div>
+<label class="chk-row" style="margin-top:12px"><input type="checkbox" id="duotoneOn"> Duotone from photo</label>
+<p class="mini" style="margin:6px 0 8px">Pulls two tones from your image (not a film pack).</p>
+<div id="duotoneControls" class="hidden">
+<div class="row">
+<div class="field"><label>Shadows</label><input id="duotoneShadow" type="color" value="#1a1028" style="width:100%;height:34px;border-radius:8px;border:1px solid var(--line);background:#0c0a12"></div>
+<div class="field"><label>Highlights</label><input id="duotoneHighlight" type="color" value="#e8dcc8" style="width:100%;height:34px;border-radius:8px;border:1px solid var(--line);background:#0c0a12"></div>
+</div>
+<div class="row" style="margin-top:8px">
+<button type="button" class="btn secondary" id="duotoneExtract" style="font-size:11px">Re-extract</button>
+<button type="button" class="btn secondary" id="duotoneSwap" style="font-size:11px">Swap</button>
+</div>
+</div>
+<label style="margin-top:14px">Texture <span class="mini">(separate from film grain)</span></label>
+<div class="triple" style="margin-bottom:8px">
+<button type="button" class="preset tex active" data-tex="none">None</button>
+<button type="button" class="preset tex" data-tex="paper">Paper</button>
+<button type="button" class="preset tex" data-tex="dust">Dust</button>
+</div>
+<div class="triple">
+<button type="button" class="preset tex" data-tex="aged">Aged print</button>
+</div>
+<div class="field" style="margin-top:8px"><label>Texture opacity</label><div class="range-row"><input id="texOpacity" type="range" min="0" max="60" value="0"><output id="texOpacityOut">0</output></div></div>
 </div></div>
 <div class="section collapsible" data-coll="film">
 <div class="coll-head"><h3>Film look</h3><span class="coll-chev">▾</span></div>
@@ -1104,9 +1126,26 @@ Everybody needs you</textarea></div>
 <button type="button" class="preset scorner" data-scorner="bl">Bottom left</button>
 <button type="button" class="preset scorner" data-scorner="tr">Top right</button>
 </div>
+<label style="margin-top:10px">Curve (stamp only)</label>
+<div class="triple">
+<button type="button" class="preset scarve active" data-scarve="none">Flat</button>
+<button type="button" class="preset scarve" data-scarve="up">Arc ↑</button>
+<button type="button" class="preset scarve" data-scarve="down">Arc ↓</button>
+</div>
+<div class="field" style="margin-top:8px"><label>Arc amount</label><div class="range-row"><input id="stampArc" type="range" min="20" max="90" value="45"><output id="stampArcOut">45</output></div></div>
 <p class="mini" style="margin-top:8px">Saved with each project. Account can store defaults.</p>
 </div>
 </div>
+</div>
+<div class="section">
+<h3>Spread <span class="mini">(carousel)</span></h3>
+<p class="mini" style="margin:0 0 10px">2–3 slides that share style. Edit text per slide, then export sequence.</p>
+<div class="row" style="margin-bottom:8px">
+<button type="button" class="btn secondary" id="spreadAdd" style="font-size:11px">＋ Add slide</button>
+<button type="button" class="btn secondary" id="spreadClear" style="font-size:11px">Clear spread</button>
+</div>
+<div id="spreadList" class="mini" style="margin-bottom:8px">No spread — single card</div>
+<div class="triple" id="spreadTabs" style="margin-bottom:8px"></div>
 </div>
 <div class="section"><div class="row"><button class="btn primary" id="renderBtn">Press card</button><button class="btn danger" id="resetBtn">Reset</button></div>
 <div class="share-look-box">
@@ -1175,6 +1214,7 @@ Everybody needs you</textarea></div>
 <button class="btn primary" type="button" id="esPng">Download PNG</button>
 <button class="btn secondary" type="button" id="esJpg">Download JPG</button>
 <button class="btn secondary" type="button" id="esStory">Story size + PNG</button>
+<button class="btn secondary" type="button" id="esSpread">Export Spread sequence</button>
 <button class="btn secondary" type="button" id="esCaption">Copy caption</button>
 <button class="btn secondary" type="button" id="esShare">Share to X</button>
 <button class="btn secondary" type="button" id="esSave">Save to library</button>
@@ -1463,6 +1503,31 @@ function fillBrand(ctx,x,y,align){
   ctx.fillText(t,x,y);
   ctx.restore();
 }
+artStamp.curve=artStamp.curve||'none';artStamp.arc=artStamp.arc||45;
+function drawTextOnArc(ctx,text,cx,cy,radius,upward){
+  // Character-by-character along a circular arc (stamp / short captions only)
+  const chars=Array.from(text);
+  if(!chars.length)return;
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  const widths=chars.map(ch=>ctx.measureText(ch).width);
+  const total=widths.reduce((a,b)=>a+b,0);
+  const angSpan=Math.min(Math.PI*0.85,total/Math.max(8,radius));
+  let a=-angSpan/2;
+  for(let i=0;i<chars.length;i++){
+    const w=widths[i];
+    const mid=a+(w/(2*Math.max(8,radius)));
+    const px=cx+radius*Math.sin(mid);
+    const py=cy+(upward?-1:1)*radius*(1-Math.cos(mid));
+    ctx.save();
+    ctx.translate(px,py);
+    ctx.rotate(upward?mid:-mid);
+    ctx.fillText(chars[i],0,0);
+    ctx.restore();
+    a+=w/Math.max(8,radius)+0.015;
+  }
+  ctx.restore();
+}
 function drawStampAt(ctx,W,H,pad){
   const t=brandStamp||'PRESSED.'; if(!t)return;
   ctx.save();
@@ -1473,10 +1538,24 @@ function drawStampAt(ctx,W,H,pad){
   const c=artStamp.corner||'br';
   if(c==='bl'){x=pad;al='left'}
   if(c==='tr'){x=W-pad;y=pad+artStamp.size;al='right'}
+  if(artStamp.curve&&artStamp.curve!=='none'){
+    const radius=Math.max(40,Math.min(W,H)*(artStamp.arc||45)/100);
+    const cx=(c==='bl')?pad+40:(W-pad-40);
+    const cy=(c==='tr')?pad+radius*0.3:(H-pad-4);
+    drawTextOnArc(ctx,t,cx,cy,radius,artStamp.curve==='up');
+    ctx.restore();return;
+  }
   ctx.textAlign=al;ctx.textBaseline='alphabetic';
   ctx.fillText(t,x,y);
   ctx.restore();
 }
+if($('stampArc'))$('stampArc').oninput=e=>{artStamp.arc=+e.target.value;if($('stampArcOut'))$('stampArcOut').textContent=e.target.value;draw()};
+document.querySelectorAll('.scarve').forEach(b=>b.onclick=()=>{
+  artStamp.curve=b.dataset.scarve||'none';
+  document.querySelectorAll('.scarve').forEach(x=>x.classList.toggle('active',x===b));
+  draw();
+});
+
 
 async function hashPass(p){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('pressed|'+p));
@@ -1845,6 +1924,42 @@ function buildFontGrid(){
 }
 function syncFontGrid(){const box=$('fontGrid');if(!box)return;box.querySelectorAll('.font-btn').forEach(x=>x.classList.toggle('active',x.dataset.font===state.font))}
 buildFontGrid();try{updatePairChip();wireArtifactControls();syncArtifactUI()}catch(e){}
+
+// Duotone + texture UI wiring
+if($('duotoneOn'))$('duotoneOn').onchange=e=>{
+  duotoneOn=e.target.checked;
+  if($('duotoneControls'))$('duotoneControls').classList.toggle('hidden',!duotoneOn);
+  if(duotoneOn&&img){const p=extractDuotoneFromImage(img);duotoneShadow=p.shadow;duotoneHighlight=p.highlight;
+    if($('duotoneShadow'))$('duotoneShadow').value=duotoneShadow;
+    if($('duotoneHighlight'))$('duotoneHighlight').value=duotoneHighlight;
+  }
+  draw();
+};
+if($('duotoneExtract'))$('duotoneExtract').onclick=()=>{
+  if(!img)return toast('Upload a photo first');
+  const p=extractDuotoneFromImage(img);duotoneShadow=p.shadow;duotoneHighlight=p.highlight;
+  if($('duotoneShadow'))$('duotoneShadow').value=duotoneShadow;
+  if($('duotoneHighlight'))$('duotoneHighlight').value=duotoneHighlight;
+  duotoneOn=true;if($('duotoneOn'))$('duotoneOn').checked=true;
+  if($('duotoneControls'))$('duotoneControls').classList.remove('hidden');
+  draw();toast('Duotone from photo');
+};
+if($('duotoneSwap'))$('duotoneSwap').onclick=()=>{
+  const t=duotoneShadow;duotoneShadow=duotoneHighlight;duotoneHighlight=t;
+  if($('duotoneShadow'))$('duotoneShadow').value=duotoneShadow;
+  if($('duotoneHighlight'))$('duotoneHighlight').value=duotoneHighlight;
+  draw();
+};
+if($('duotoneShadow'))$('duotoneShadow').oninput=e=>{duotoneShadow=e.target.value;draw()};
+if($('duotoneHighlight'))$('duotoneHighlight').oninput=e=>{duotoneHighlight=e.target.value;draw()};
+document.querySelectorAll('.tex').forEach(b=>b.onclick=()=>{
+  textureType=b.dataset.tex||'none';
+  document.querySelectorAll('.tex').forEach(x=>x.classList.toggle('active',x===b));
+  if(textureType!=='none'&&textureOpacity<0.08){textureOpacity=0.22;if($('texOpacity')){$('texOpacity').value=22;$('texOpacityOut').textContent=22}}
+  draw();
+});
+if($('texOpacity'))$('texOpacity').oninput=e=>{textureOpacity=(+e.target.value)/100;if($('texOpacityOut'))$('texOpacityOut').textContent=e.target.value;draw()};
+
 function readableOn(hex){const c=(hex||'#ffffff').replace('#','');const r=parseInt(c.substring(0,2),16),g=parseInt(c.substring(2,4),16),b=parseInt(c.substring(4,6),16);const lum=(0.299*r+0.587*g+0.114*b)/255;return lum>0.6?'#111111':'#ffffff'}
 // render at 2x and scale down for crisp, non-jagged text at export size
 // Lower resolution on small/weak devices to prevent tab crashes
@@ -2210,7 +2325,7 @@ function loadImageDownscaled(src,maxDim){
     im.onerror=reject;im.src=src;
   });
 }
-$('fileInput').onchange=e=>{const f=e.target.files[0];if(!f)return;status('Loading image…');const r=new FileReader();r.onload=async ev=>{try{img=await loadImageDownscaled(ev.target.result,LOW_MEM?1600:2800);status('Artwork loaded','ok');draw();updatePalette(img);updateEmptyGuide()}catch(err){status('Could not load that image.','err')}};r.readAsDataURL(f)};
+$('fileInput').onchange=e=>{const f=e.target.files[0];if(!f)return;status('Loading image…');const r=new FileReader();r.onload=async ev=>{try{img=await loadImageDownscaled(ev.target.result,LOW_MEM?1600:2800);status('Artwork loaded','ok');if(duotoneOn){const p=extractDuotoneFromImage(img);duotoneShadow=p.shadow;duotoneHighlight=p.highlight;if($('duotoneShadow'))$('duotoneShadow').value=duotoneShadow;if($('duotoneHighlight'))$('duotoneHighlight').value=duotoneHighlight}draw();updatePalette(img);updateEmptyGuide()}catch(err){status('Could not load that image.','err')}};r.readAsDataURL(f)};
 function status(m,c=''){$('status').textContent=m;$('status').className='status '+c}
 $('fetchArtBtn').onclick=async()=>{const u=$('mediaUrl').value.trim();if(!u)return status('Paste a link first.','err');status('Fetching artwork…');try{let o=/open\.spotify\.com/.test(u)?'https://open.spotify.com/oembed?url='+encodeURIComponent(u):/youtu/.test(u)?'https://www.youtube.com/oembed?url='+encodeURIComponent(u)+'&format=json':'https://noembed.com/embed?url='+encodeURIComponent(u);let d=await (await fetch(o)).json();if(!d.thumbnail_url)throw 0;let im=new Image();im.crossOrigin='anonymous';im.onload=async()=>{try{img=await loadImageDownscaled(im.src,LOW_MEM?1600:2800)}catch(e){img=im}$('creditSub').value=d.title||$('creditSub').value;$('creditMain').value=d.author_name||$('creditMain').value;status('Artwork pulled ✓','ok');draw();updatePalette(img);updateEmptyGuide()};im.onerror=()=>status('Image blocked by source — upload manually.','err');im.src=d.thumbnail_url}catch(e){status('Could not fetch this link. Try uploading artwork.','err')}};
 
@@ -2334,6 +2449,91 @@ function applyGrain(x,y,w,h){
   for(let yy=y;yy<y+h;yy+=th)for(let xx=x;xx<x+w;xx+=tw)ctx.drawImage(oc,xx,yy);
   ctx.restore();
 }
+// ---- Duotone (palette from photo) + Texture (independent of grain) ----
+let duotoneOn=false,duotoneShadow='#1a1028',duotoneHighlight='#e8dcc8';
+let textureType='none',textureOpacity=0;
+const _texCache={};
+function extractDuotoneFromImage(im){
+  // Sample downscaled image: find dark dominant + bright/saturated dominant (no external lib)
+  try{
+    const size=48,oc=document.createElement('canvas');oc.width=size;oc.height=size;
+    const o=oc.getContext('2d');o.drawImage(im,0,0,size,size);
+    const data=o.getImageData(0,0,size,size).data;
+    let dark={s:1e9,c:[20,16,28]},light={s:-1,c:[232,220,200]};
+    for(let i=0;i<data.length;i+=4){
+      if(data[i+3]<128)continue;
+      const r=data[i],g=data[i+1],b=data[i+2];
+      const lum=0.2126*r+0.7152*g+0.0722*b;
+      const sat=Math.max(r,g,b)-Math.min(r,g,b);
+      if(lum<dark.s){dark={s:lum,c:[r,g,b]}}
+      const score=lum*0.55+sat*0.45;
+      if(score>light.s){light={s:score,c:[r,g,b]}}
+    }
+    const hex=c=>'#'+c.map(v=>Math.max(0,Math.min(255,v|0)).toString(16).padStart(2,'0')).join('');
+    return{shadow:hex(dark.c),highlight:hex(light.c)};
+  }catch(e){return{shadow:'#1a1028',highlight:'#e8dcc8'}}
+}
+function applyDuotone(x,y,w,h){
+  if(!duotoneOn||bgMode!=='image'||!img)return;
+  try{
+    // Gradient-map style: luminance → mix shadow/highlight via multiply + screen trick
+    ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+    // Shadow fill multiply
+    ctx.globalCompositeOperation='multiply';
+    ctx.fillStyle=duotoneShadow;ctx.globalAlpha=0.85;ctx.fillRect(x,y,w,h);
+    // Highlight lift
+    ctx.globalCompositeOperation='screen';
+    ctx.fillStyle=duotoneHighlight;ctx.globalAlpha=0.35;ctx.fillRect(x,y,w,h);
+    ctx.restore();
+  }catch(e){}
+}
+function getTextureTile(type){
+  if(_texCache[type])return _texCache[type];
+  const size=LOW_MEM?64:96;
+  const oc=document.createElement('canvas');oc.width=size;oc.height=size;
+  const o=oc.getContext('2d');
+  const id=o.createImageData(size,size);const d=id.data;
+  if(type==='paper'){
+    for(let i=0;i<d.length;i+=4){
+      const n=220+(Math.random()*35|0);
+      d[i]=d[i+1]=d[i+2]=n;d[i+3]=255;
+    }
+  }else if(type==='dust'){
+    for(let i=0;i<d.length;i+=4){d[i]=d[i+1]=d[i+2]=0;d[i+3]=0}
+    o.putImageData(id,0,0);
+    for(let k=0;k<40;k++){
+      o.fillStyle=`rgba(255,255,255,${0.15+Math.random()*0.5})`;
+      const px=Math.random()*size,py=Math.random()*size;
+      o.fillRect(px,py,1+Math.random()*2,1);
+      if(Math.random()>0.7){o.strokeStyle='rgba(255,255,255,0.25)';o.beginPath();o.moveTo(px,py);o.lineTo(px+(Math.random()-0.5)*20,py+(Math.random()-0.5)*12);o.stroke()}
+    }
+    _texCache[type]=oc;return oc;
+  }else if(type==='aged'){
+    for(let i=0;i<d.length;i+=4){
+      const n=180+(Math.random()*50|0);
+      d[i]=n;d[i+1]=n-20;d[i+2]=n-40;d[i+3]=255;
+    }
+  }else{
+    for(let i=0;i<d.length;i+=4){d[i]=d[i+1]=d[i+2]=128;d[i+3]=0}
+  }
+  o.putImageData(id,0,0);
+  if(type==='aged'){
+    o.fillStyle='rgba(120,80,40,0.15)';
+    for(let k=0;k<8;k++)o.fillRect(Math.random()*size,Math.random()*size,10+Math.random()*30,2);
+  }
+  _texCache[type]=oc;return oc;
+}
+function applyTexture(x,y,w,h){
+  if(textureType==='none'||textureOpacity<=0.01)return;
+  const oc=getTextureTile(textureType);
+  ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+  ctx.globalAlpha=Math.min(0.55,textureOpacity);
+  ctx.globalCompositeOperation=textureType==='dust'?'screen':'overlay';
+  const tw=oc.width,th=oc.height;
+  for(let yy=y;yy<y+h;yy+=th)for(let xx=x;xx<x+w;xx+=tw)ctx.drawImage(oc,xx,yy);
+  ctx.restore();
+}
+
 function applyVignette(x,y,w,h){
   if(state.vignette<=0.01)return;
   const cx=x+w/2,cy=y+h/2,r=Math.max(w,h)*0.72;
@@ -2368,7 +2568,7 @@ function coverRect(x,y,w,h){
   // Photo mode with image, else intentional background
   if(bgMode!=='image'||!img){
     fillBackground(x,y,w,h);
-    applyFilmGrade(x,y,w,h);applyGrain(x,y,w,h);applyVignette(x,y,w,h);applyLightLeak(x,y,w,h);
+    applyFilmGrade(x,y,w,h);applyGrain(x,y,w,h);applyTexture(x,y,w,h);applyVignette(x,y,w,h);applyLightLeak(x,y,w,h);
     return;
   }
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
@@ -2376,7 +2576,8 @@ function coverRect(x,y,w,h){
   let s=Math.max(w/img.width,h/img.height),iw=img.width*s,ih=img.height*s;
   ctx.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);ctx.filter='none';ctx.restore();
   ctx.fillStyle=`rgba(0,0,0,${state.darkness})`;ctx.fillRect(x,y,w,h);
-  applyFilmGrade(x,y,w,h);applyGrain(x,y,w,h);applyVignette(x,y,w,h);applyLightLeak(x,y,w,h);
+  applyDuotone(x,y,w,h);
+  applyFilmGrade(x,y,w,h);applyGrain(x,y,w,h);applyTexture(x,y,w,h);applyVignette(x,y,w,h);applyLightLeak(x,y,w,h);
 }
 function cover(W,H){coverRect(0,0,W,H)}
 function getQuoteText(){return displayText(($("quoteText").value||"").trim())}
@@ -3181,7 +3382,7 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 // ============================================================
 // CONFIG: serialize / apply the editor's full state
 // ============================================================
-function currentConfig(){return{mode,quoteText:$('quoteText').value,captionText:$('captionText')?$('captionText').value:'',creditMain:$('creditMain').value,creditSub:$('creditSub').value,album:$('album').value,year:$('year').value,font:state.font,fontSize:state.fontSize,lineSpace:state.lineSpace,darkness:state.darkness,blur:state.blur,brightness:state.brightness,grain:state.grain,vignette:state.vignette,leak:state.leak,leakColor:state.leakColor,filmGrade,textColor,highlight,treatment,align,template,format,textPos,textOffset,creditFmt,layoutOpts:{...layoutOpts},freeLayout,layerPos:{main:{...layerPos.main},caption:{...layerPos.caption},credit:{...layerPos.credit}},layerOrder:[...layerOrder],layerVis:{...layerVis},brandStamp:brandStamp,artCredit:Object.assign({},artCredit),artStamp:Object.assign({},artStamp)}}
+function currentConfig(){return{mode,quoteText:$('quoteText').value,captionText:$('captionText')?$('captionText').value:'',creditMain:$('creditMain').value,creditSub:$('creditSub').value,album:$('album').value,year:$('year').value,font:state.font,fontSize:state.fontSize,lineSpace:state.lineSpace,darkness:state.darkness,blur:state.blur,brightness:state.brightness,grain:state.grain,vignette:state.vignette,leak:state.leak,leakColor:state.leakColor,filmGrade,textColor,highlight,treatment,align,template,format,textPos,textOffset,creditFmt,layoutOpts:{...layoutOpts},freeLayout,layerPos:{main:{...layerPos.main},caption:{...layerPos.caption},credit:{...layerPos.credit}},layerOrder:[...layerOrder],layerVis:{...layerVis},brandStamp:brandStamp,artCredit:Object.assign({},artCredit),artStamp:Object.assign({},artStamp),duotoneOn:duotoneOn,duotoneShadow:duotoneShadow,duotoneHighlight:duotoneHighlight,textureType:textureType,textureOpacity:textureOpacity}}
 function applyConfig(cfg){
   if(cfg.mode){mode=cfg.mode;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.mode===mode));$('nowFields').classList.toggle('hidden',mode!=='now')}
   if(cfg.quoteText!==undefined)$('quoteText').value=cfg.quoteText;
@@ -3212,6 +3413,11 @@ function applyConfig(cfg){
   if(cfg.brandStamp!=null){brandStamp=cfg.brandStamp;if($('brandStamp'))$('brandStamp').value=brandStamp}
   if(cfg.artCredit)Object.assign(artCredit,cfg.artCredit);
   if(cfg.artStamp)Object.assign(artStamp,cfg.artStamp);
+  if(cfg.duotoneOn!=null){duotoneOn=!!cfg.duotoneOn;if($('duotoneOn'))$('duotoneOn').checked=duotoneOn;if($('duotoneControls'))$('duotoneControls').classList.toggle('hidden',!duotoneOn)}
+  if(cfg.duotoneShadow){duotoneShadow=cfg.duotoneShadow;if($('duotoneShadow'))$('duotoneShadow').value=duotoneShadow}
+  if(cfg.duotoneHighlight){duotoneHighlight=cfg.duotoneHighlight;if($('duotoneHighlight'))$('duotoneHighlight').value=duotoneHighlight}
+  if(cfg.textureType){textureType=cfg.textureType;document.querySelectorAll('.tex').forEach(x=>x.classList.toggle('active',x.dataset.tex===textureType))}
+  if(cfg.textureOpacity!=null){textureOpacity=cfg.textureOpacity;if($('texOpacity')){$('texOpacity').value=Math.round(textureOpacity*100);$('texOpacityOut').textContent=Math.round(textureOpacity*100)}}
   try{syncArtifactUI()}catch(e){}
 
   if(cfg.textPos){textPos=cfg.textPos;document.querySelectorAll('.pos').forEach(x=>x.classList.toggle('active',x.dataset.pos===textPos))}
@@ -3325,9 +3531,9 @@ if($('downloadStoryBtn'))$('downloadStoryBtn').onclick=downloadStory;
 // DAILY PRESS — short, single-line example set that rotates by date
 // ============================================================
 const DAILY=[
- {cat:'LYRIC',text:"Hope you're doin' well, bruh\nEverybody needs you",credit:'FRANK OCEAN',sub:'NIGHTS',grad:'linear-gradient(160deg,#1b2a3d,#0a0d12)',tag:'lyric'},
- {cat:'POETRY',text:'The wound is the place where the light enters you.',credit:'RUMI',sub:'POETRY',grad:'linear-gradient(160deg,#2a1b3d,#0a0d12)',tag:'poetry'},
- {cat:'FILM',text:'I guess I just miss things when they change.',credit:'LADY BIRD',sub:'2017',grad:'linear-gradient(160deg,#3d2a1b,#0a0d12)',tag:'film'},
+ {cat:'LYRIC',text:"Hope you're doin' well, bruh\nEverybody needs you",credit:'FRANK OCEAN',sub:'NIGHTS',month:8,day:20,grad:'linear-gradient(160deg,#1b2a3d,#0a0d12)',tag:'lyric'},
+ {cat:'POETRY',text:'The wound is the place where the light enters you.',credit:'RUMI',sub:'POETRY',month:9,day:30,grad:'linear-gradient(160deg,#2a1b3d,#0a0d12)',tag:'poetry'},
+ {cat:'FILM',text:'I guess I just miss things when they change.',credit:'LADY BIRD',sub:'2017',month:11,day:10,grad:'linear-gradient(160deg,#3d2a1b,#0a0d12)',tag:'film'},
  {cat:'PHILOSOPHY',text:'You are the sky. Everything else is just the weather.',credit:'PEMA CHÖDRÖN',sub:'TEACHER',grad:'linear-gradient(160deg,#1b3d3a,#0a0d12)',tag:'philosophy'},
  {cat:'ROMANTIC',text:'I carry your heart with me (I carry it in my heart)',credit:'E.E. CUMMINGS',sub:'POETRY',grad:'linear-gradient(160deg,#3d1b2e,#0a0d12)',tag:'romantic'},
  {cat:'MOTIVATION',text:'Still I rise.',credit:'MAYA ANGELOU',sub:'POETRY',grad:'linear-gradient(160deg,#3d3010,#0a0d12)',tag:'motivation'},
@@ -3366,7 +3572,22 @@ function renderQuoteLib(){
   });
 }
 function dayOfYearIndex(){const now=new Date();const start=new Date(now.getFullYear(),0,0);const diff=now-start;return Math.floor(diff/86400000)%DAILY.length}
-let dailyIdx=dayOfYearIndex();
+let dailyIdx=0;try{dailyIdx=pickDailyIndex()}catch(e){dailyIdx=0};
+
+function pickDailyIndex(){
+  const now=new Date(),m=now.getMonth()+1,d=now.getDate();
+  // Optional month/day on entries — prioritize "on this day", else near day, else rotate by date seed
+  const hits=[];
+  DAILY.forEach((e,i)=>{if(e.month===m&&e.day===d)hits.push(i)});
+  if(hits.length){DAILY[hits[0]].onThisDay=true;return hits[0]}
+  // near: same month within 3 days
+  DAILY.forEach((e,i)=>{if(e.month===m&&e.day&&Math.abs(e.day-d)<=3)hits.push(i)});
+  if(hits.length)return hits[Math.floor(Math.random()*hits.length)];
+  // deterministic daily rotation
+  const seed=(now.getFullYear()*372+m*31+d)%Math.max(1,DAILY.length);
+  return seed;
+}
+
 function renderDaily(){
   const e=DAILY[dailyIdx];
   if($('dailyHero'))$('dailyHero').style.background=e.grad;
@@ -3374,7 +3595,7 @@ function renderDaily(){
   if($('dailyText'))$('dailyText').textContent=e.text;
   if($('dailyCredit'))$('dailyCredit').textContent=e.credit;
   if($('dailySub'))$('dailySub').textContent=e.sub||'';
-  if($('dailyDate'))$('dailyDate').textContent=new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  if($('dailyDate'))$('dailyDate').textContent=new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'})+(DAILY[dailyIdx]&&DAILY[dailyIdx].onThisDay?' · on this day':'');
 }
 $('dailyPrev').onclick=()=>{dailyIdx=(dailyIdx-1+DAILY.length)%DAILY.length;renderDaily()};
 $('dailyNext').onclick=()=>{dailyIdx=(dailyIdx+1)%DAILY.length;renderDaily()};
@@ -4091,7 +4312,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v24';
+      const CACHE='pressed-v25';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -4171,6 +4392,68 @@ async function idbDel(key){
 try{resizeCanvas()}catch(e){}
 document.body.classList.add('show-m-actions'); // start on Create
 try{updateExportMeta();updatePairChip()}catch(e){}
+
+// ---- Multi-card Spread (carousel export) ----
+let spreadSlides=[],spreadActive=0;
+function spreadSyncFromEditor(){
+  if(!spreadSlides.length)return;
+  const s=spreadSlides[spreadActive];if(!s)return;
+  s.quoteText=$('quoteText').value;s.creditMain=$('creditMain').value;s.creditSub=$('creditSub').value;
+  s.captionText=$('captionText')?$('captionText').value:'';
+}
+function spreadApplyToEditor(i){
+  const s=spreadSlides[i];if(!s)return;
+  spreadActive=i;
+  if($('quoteText'))$('quoteText').value=s.quoteText||'';
+  if($('creditMain'))$('creditMain').value=s.creditMain||'';
+  if($('creditSub'))$('creditSub').value=s.creditSub||'';
+  if($('captionText'))$('captionText').value=s.captionText||'';
+  draw();renderSpreadTabs();
+}
+function renderSpreadTabs(){
+  const box=$('spreadTabs'),list=$('spreadList');
+  if(list)list.textContent=spreadSlides.length? (spreadSlides.length+' slides · editing '+(spreadActive+1)):'No spread — single card';
+  if(!box)return;box.innerHTML='';
+  spreadSlides.forEach((_,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='preset'+(i===spreadActive?' active':'');
+    b.textContent='Slide '+(i+1);
+    b.onclick=()=>{spreadSyncFromEditor();spreadApplyToEditor(i)};
+    box.appendChild(b);
+  });
+}
+if($('spreadAdd'))$('spreadAdd').onclick=()=>{
+  if(spreadSlides.length>=3)return toast('Max 3 slides');
+  spreadSyncFromEditor();
+  if(!spreadSlides.length){
+    spreadSlides.push({quoteText:$('quoteText').value,creditMain:$('creditMain').value,creditSub:$('creditSub').value,captionText:$('captionText')?$('captionText').value:''});
+  }
+  spreadSlides.push({quoteText:$('quoteText').value,creditMain:$('creditMain').value,creditSub:$('creditSub').value,captionText:''});
+  spreadActive=spreadSlides.length-1;
+  renderSpreadTabs();toast('Slide '+spreadSlides.length+' added — edit text, style stays shared');
+};
+if($('spreadClear'))$('spreadClear').onclick=()=>{spreadSlides=[];spreadActive=0;renderSpreadTabs();toast('Spread cleared')};
+async function exportSpreadSequence(){
+  if(spreadSlides.length<2)return toast('Add at least 2 slides first');
+  spreadSyncFromEditor();
+  toast('Exporting spread…');
+  showExportProgress(true,'Spread 1/'+spreadSlides.length,10);
+  const prev={q:$('quoteText').value,a:$('creditMain').value,s:$('creditSub').value};
+  for(let i=0;i<spreadSlides.length;i++){
+    const s=spreadSlides[i];
+    $('quoteText').value=s.quoteText||'';$('creditMain').value=s.creditMain||'';$('creditSub').value=s.creditSub||'';
+    showExportProgress(true,'Slide '+(i+1)+'/'+spreadSlides.length,15+i/spreadSlides.length*70);
+    await new Promise(r=>setTimeout(r,30));
+    download(); // uses current quality tier
+    await new Promise(r=>setTimeout(r,200));
+  }
+  $('quoteText').value=prev.q;$('creditMain').value=prev.a;$('creditSub').value=prev.s;
+  draw();
+  showExportProgress(true,'Done',100);
+  setTimeout(()=>showExportProgress(false),500);
+  toast('Spread exported · '+spreadSlides.length+' images');
+}
+if($('esSpread'))$('esSpread').onclick=()=>{closeExportSheet();exportSpreadSequence()};
+
 
 (function tabStructureOnboard(){
   try{
