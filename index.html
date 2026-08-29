@@ -822,6 +822,7 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 </div>
 <div class="quickstart">
 <button class="btn secondary" id="qsBlank">＋ Blank</button>
+<button class="btn secondary" id="qsZine">Zine</button>
 <button class="btn secondary" id="qsGenius">Lyric card</button>
 <button class="btn secondary" id="qsFilm">Film look</button>
 <button class="btn secondary" id="qsFold">Fold pull-quote</button>
@@ -1152,13 +1153,15 @@ Everybody needs you</textarea></div>
 </div>
 </div>
 <div class="section">
-<h3>Spread <span class="mini">(carousel)</span></h3>
-<p class="mini" style="margin:0 0 10px">2–3 slides that share style. Edit text per slide, then export sequence.</p>
-<div class="row" style="margin-bottom:8px">
-<button type="button" class="btn secondary" id="spreadAdd" style="font-size:11px">＋ Add slide</button>
-<button type="button" class="btn secondary" id="spreadClear" style="font-size:11px">Clear spread</button>
+<h3>Zine <span class="mini">(flip sequence)</span></h3>
+<p class="mini" style="margin:0 0 10px">Multi-page piece: cover + slides + optional end. Shared Look by default. Spreads live here too.</p>
+<div class="row" style="margin-bottom:8px;flex-wrap:wrap">
+<button type="button" class="btn secondary" id="spreadAdd" style="font-size:11px">＋ Page</button>
+<button type="button" class="btn secondary" id="zineCover" style="font-size:11px">Cover from current</button>
+<button type="button" class="btn secondary" id="zineEnd" style="font-size:11px">End card</button>
+<button type="button" class="btn secondary" id="spreadClear" style="font-size:11px">Clear</button>
 </div>
-<div id="spreadList" class="mini" style="margin-bottom:8px">No spread — single card</div>
+<div id="spreadList" class="mini" style="margin-bottom:8px">Single card — add pages for a zine</div>
 <div class="triple" id="spreadTabs" style="margin-bottom:8px"></div>
 </div>
 <div class="section"><div class="row"><button class="btn primary" id="renderBtn">Press card</button><button class="btn danger" id="resetBtn">Reset</button></div>
@@ -1219,6 +1222,19 @@ Everybody needs you</textarea></div>
 <button type="button" class="quality-opt" data-tier="high"><div><div class="q-title">High</div><div class="q-dim" data-qdim="high">—</div></div></button>
 <button type="button" class="quality-opt" data-tier="max"><div><div class="q-title">Ultra</div><div class="q-dim" data-qdim="max">—</div><div class="q-warn" id="ultraWarn" style="display:none">Ultra: often 2–8 seconds on phones · progress shows while rendering</div></div></button>
 </div>
+<div style="margin:10px 0 12px;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03)">
+<label class="chk-row"><input type="checkbox" id="animateOn"> Animate (Ken Burns)</label>
+<p class="mini" style="margin:6px 0 8px">Subtle pan/zoom on photo · ~3–6s WebM for Reels/Stories</p>
+<div id="animateOpts" class="hidden">
+<label>Duration</label>
+<div class="triple" style="margin-bottom:8px">
+<button type="button" class="preset adur active" data-adur="3">Short 3s</button>
+<button type="button" class="preset adur" data-adur="4">Med 4s</button>
+<button type="button" class="preset adur" data-adur="6">Long 6s</button>
+</div>
+<p class="mini" id="animateUltraWarn" style="display:none;color:#f0b27a">Ultra + Animate is capped to High resolution (memory).</p>
+</div>
+</div>
 <div id="exportProgress" class="hidden" style="margin:8px 0 12px">
 <div style="height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden">
 <div id="exportProgressBar" style="height:100%;width:15%;background:linear-gradient(90deg,var(--accent),#a99bff);border-radius:99px;transition:width .3s"></div>
@@ -1227,8 +1243,10 @@ Everybody needs you</textarea></div>
 </div>
 <button class="btn primary" type="button" id="esPng">Download PNG</button>
 <button class="btn secondary" type="button" id="esJpg">Download JPG</button>
+<button class="btn secondary hidden" type="button" id="esAnim">Download video (WebM)</button>
 <button class="btn secondary" type="button" id="esStory">Story size + PNG</button>
-<button class="btn secondary" type="button" id="esSpread">Export Spread sequence</button>
+<button class="btn secondary" type="button" id="esSpread">Export Zine / sequence</button>
+<button class="btn secondary" type="button" id="esZineLink">Copy Zine flip link</button>
 <button class="btn secondary" type="button" id="esCaption">Copy caption</button>
 <button class="btn secondary" type="button" id="esShare">Share to X</button>
 <button class="btn secondary" type="button" id="esSave">Save to library</button>
@@ -2630,7 +2648,16 @@ function coverRect(x,y,w,h){
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
   ctx.filter=`brightness(${state.brightness}) blur(${state.blur}px)`;
   let s=Math.max(w/img.width,h/img.height),iw=img.width*s,ih=img.height*s;
-  ctx.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);ctx.filter='none';ctx.restore();
+  let kb=typeof window.__kenBurnsT==='number'?window.__kenBurnsT:null;
+  if(kb!=null){
+    const zoom=1+0.08*kb;
+    const panX=(kb-0.5)*0.05*w, panY=(kb-0.5)*-0.035*h;
+    s*=zoom;iw=img.width*s;ih=img.height*s;
+    ctx.drawImage(img,x+(w-iw)/2+panX,y+(h-ih)/2+panY,iw,ih);
+  }else{
+    ctx.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih);
+  }
+  ctx.filter='none';ctx.restore();
   ctx.fillStyle=`rgba(0,0,0,${state.darkness})`;ctx.fillRect(x,y,w,h);
   applyDuotone(x,y,w,h);
   applyFilmGrade(x,y,w,h);applyGrain(x,y,w,h);applyTexture(x,y,w,h);applyVignette(x,y,w,h);applyLightLeak(x,y,w,h);
@@ -3323,6 +3350,127 @@ function download(){
     showExportProgress(true,'Done',100);setTimeout(()=>showExportProgress(false),400);toast('Exported '+d[0]+'×'+d[1]+' ✓');if(exportTier==='max')try{maybeShowBackupNudge('ultra')}catch(e){}
   }catch(e){console.warn(e);drawImmediate();const a=document.createElement('a');a.download='pressed-card.png';a.href=canvas.toDataURL('image/png');a.click();showExportProgress(false);toast('Exported (fallback)')}
 }
+
+// ---- Ken Burns animated export (WebM via MediaRecorder) ----
+let animateOn=false, animateDur=4;
+function supportsAnimExport(){
+  try{
+    const c=document.createElement('canvas');c.width=2;c.height=2;
+    if(!c.captureStream)return false;
+    if(typeof MediaRecorder==='undefined')return false;
+    // Prefer VP9/WebM; MP4/H264 rarely available from canvas in browsers
+    return MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      || MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+      || MediaRecorder.isTypeSupported('video/webm');
+  }catch(e){return false}
+}
+function animMime(){
+  if(MediaRecorder.isTypeSupported('video/webm;codecs=vp9'))return 'video/webm;codecs=vp9';
+  if(MediaRecorder.isTypeSupported('video/webm;codecs=vp8'))return 'video/webm;codecs=vp8';
+  return 'video/webm';
+}
+if($('animateOn'))$('animateOn').onchange=e=>{
+  animateOn=e.target.checked;
+  if($('animateOpts'))$('animateOpts').classList.toggle('hidden',!animateOn);
+  if($('esAnim'))$('esAnim').classList.toggle('hidden',!animateOn||!supportsAnimExport());
+  const uw=$('animateUltraWarn');
+  if(uw)uw.style.display=(animateOn&&exportTier==='max')?'block':'none';
+  if(animateOn&&!supportsAnimExport())toast('Video export needs a browser with MediaRecorder/WebM');
+};
+document.querySelectorAll('.adur').forEach(b=>b.onclick=()=>{
+  animateDur=+b.dataset.adur||4;
+  document.querySelectorAll('.adur').forEach(x=>x.classList.toggle('active',x===b));
+});
+function coverRectKenBurns(ctx2,W,H,t,imgEl){
+  // t in 0..1 — subtle zoom + pan
+  const zoom=1+0.08*t;
+  const panX=(t-0.5)*0.04;
+  const panY=(t-0.5)*-0.03;
+  if(bgMode!=='image'||!imgEl){
+    // reuse solid/gradient path via temp swap
+    const prev=ctx;
+    // draw using main coverRect on offscreen by temporarily pointing — simpler: call fill
+    ctx2.fillStyle=bgColor||'#0a0d12';
+    if(bgMode==='gradient'){
+      const g=ctx2.createLinearGradient(0,0,0,H);
+      const grads={night:['#0a0e1a','#1a2744'],sunset:['#3d1b2e','#c45c26'],paper:['#f5efe0','#d8cfc0'],default:['#14121c','#0a0d12']};
+      const c=grads[bgGrad]||grads.default;g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);
+      ctx2.fillStyle=g;
+    }
+    ctx2.fillRect(0,0,W,H);
+    return;
+  }
+  ctx2.save();
+  let s=Math.max(W/imgEl.width,H/imgEl.height)*zoom;
+  let iw=imgEl.width*s, ih=imgEl.height*s;
+  let x=(W-iw)/2+panX*W, y=(H-ih)/2+panY*H;
+  ctx2.filter=`brightness(${state.brightness}) blur(${state.blur}px)`;
+  ctx2.drawImage(imgEl,x,y,iw,ih);
+  ctx2.filter='none';
+  ctx2.fillStyle=`rgba(0,0,0,${state.darkness})`;
+  ctx2.fillRect(0,0,W,H);
+  ctx2.restore();
+}
+async function downloadAnimated(){
+  if(!supportsAnimExport())return toast('Animated export not supported in this browser');
+  if(!animateOn)return toast('Enable Animate first');
+  try{
+    let d=exportDims();
+    // Cap Ultra+Animate to High res
+    if(exportTier==='max'){
+      const m=formatInfo(format);
+      d=(m.out&&m.out.high)||d;
+      toast('Ultra+Animate → High res for stability');
+    }
+    const W=d[0],H=d[1];
+    const fps=24;
+    const frames=Math.round(animateDur*fps);
+    const oc=document.createElement('canvas');
+    oc.width=W;oc.height=H;
+    const octx=oc.getContext('2d');
+    const stream=oc.captureStream(fps);
+    const mime=animMime();
+    const chunks=[];
+    const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:LOW_MEM?2500000:6000000});
+    rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+    const done=new Promise((res,rej)=>{rec.onstop=()=>res();rec.onerror=rej});
+    showExportProgress(true,'Recording 0/'+frames,5);
+    rec.start();
+    // Snapshot text layers from main canvas each frame: draw KB bg then composite main design
+    // Approach: for each t, set a kenBurnsT global, force draw into offscreen via scale
+    const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
+    liveScale=W/LW;canvas.width=W;canvas.height=H;
+    for(let i=0;i<frames;i++){
+      const t=i/(frames-1||1);
+      window.__kenBurnsT=t;
+      _realDraw();
+      octx.clearRect(0,0,W,H);
+      octx.drawImage(canvas,0,0);
+      showExportProgress(true,'Frame '+(i+1)+'/'+frames,8+(i/frames)*85);
+      await new Promise(r=>setTimeout(r,1000/fps));
+    }
+    window.__kenBurnsT=null;
+    liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw();
+    rec.stop();
+    await done;
+    const blob=new Blob(chunks,{type:mime.split(';')[0]});
+    const a=document.createElement('a');
+    a.download=productionFilename('webm');
+    a.href=URL.createObjectURL(blob);
+    a.click();
+    showExportProgress(true,'Done',100);
+    setTimeout(()=>showExportProgress(false),500);
+    toast('Video exported · '+animateDur+'s WebM');
+  }catch(e){
+    console.warn(e);
+    window.__kenBurnsT=null;
+    showExportProgress(false);
+    toast('Video export failed — try static PNG');
+  }
+}
+if($('esAnim'))$('esAnim').onclick=()=>{closeExportSheet();downloadAnimated()};
+// Patch coverRect to honor Ken Burns when __kenBurnsT set
+
 function downloadJpg(){
   try{
     const d=exportDims();
@@ -4407,7 +4555,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v26';
+      const CACHE='pressed-v27';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -4547,7 +4695,18 @@ const _seriesHook=()=>{const s=getActiveSeries();if(s)applySeriesLook(s)};
 try{updateExportMeta();updatePairChip();renderSeriesBar()}catch(e){}
 
 // ---- Multi-card Spread (carousel export) ----
-let spreadSlides=[],spreadActive=0;
+let spreadSlides=[],spreadActive=0; // Zine pages (covers Spread)
+function makeSlide(role){
+  return{
+    role:role||'page',
+    quoteText:$('quoteText')?$('quoteText').value:'',
+    creditMain:$('creditMain')?$('creditMain').value:'',
+    creditSub:$('creditSub')?$('creditSub').value:'',
+    captionText:$('captionText')?$('captionText').value:'',
+    // style snapshot optional override
+    override:null
+  };
+}
 function spreadSyncFromEditor(){
   if(!spreadSlides.length)return;
   const s=spreadSlides[spreadActive];if(!s)return;
@@ -4565,47 +4724,150 @@ function spreadApplyToEditor(i){
 }
 function renderSpreadTabs(){
   const box=$('spreadTabs'),list=$('spreadList');
-  if(list)list.textContent=spreadSlides.length? (spreadSlides.length+' slides · editing '+(spreadActive+1)):'No spread — single card';
+  const n=spreadSlides.length;
+  if(list)list.textContent=n? (n+' pages · editing '+(spreadActive+1)+(spreadSlides[spreadActive]&&spreadSlides[spreadActive].role==='cover'?' (cover)':spreadSlides[spreadActive]&&spreadSlides[spreadActive].role==='end'?' (end)':'')):'Single card — add pages for a zine';
   if(!box)return;box.innerHTML='';
-  spreadSlides.forEach((_,i)=>{
+  spreadSlides.forEach((s,i)=>{
     const b=document.createElement('button');b.type='button';b.className='preset'+(i===spreadActive?' active':'');
-    b.textContent='Slide '+(i+1);
+    b.textContent=s.role==='cover'?'Cover':s.role==='end'?'End':('P'+(i+1));
     b.onclick=()=>{spreadSyncFromEditor();spreadApplyToEditor(i)};
     box.appendChild(b);
   });
 }
 if($('spreadAdd'))$('spreadAdd').onclick=()=>{
-  if(spreadSlides.length>=3)return toast('Max 3 slides');
+  if(spreadSlides.length>=12)return toast('Max 12 pages');
   spreadSyncFromEditor();
-  if(!spreadSlides.length){
-    spreadSlides.push({quoteText:$('quoteText').value,creditMain:$('creditMain').value,creditSub:$('creditSub').value,captionText:$('captionText')?$('captionText').value:''});
-  }
-  spreadSlides.push({quoteText:$('quoteText').value,creditMain:$('creditMain').value,creditSub:$('creditSub').value,captionText:''});
+  if(!spreadSlides.length)spreadSlides.push(makeSlide('page'));
+  spreadSlides.push(makeSlide('page'));
   spreadActive=spreadSlides.length-1;
-  renderSpreadTabs();toast('Slide '+spreadSlides.length+' added — edit text, style stays shared');
+  renderSpreadTabs();toast('Page added · shared Look');
 };
-if($('spreadClear'))$('spreadClear').onclick=()=>{spreadSlides=[];spreadActive=0;renderSpreadTabs();toast('Spread cleared')};
-async function exportSpreadSequence(){
-  if(spreadSlides.length<2)return toast('Add at least 2 slides first');
+if($('zineCover'))$('zineCover').onclick=()=>{
   spreadSyncFromEditor();
-  toast('Exporting spread…');
-  showExportProgress(true,'Spread 1/'+spreadSlides.length,10);
+  if(!spreadSlides.length)spreadSlides.push(makeSlide('cover'));
+  else if(spreadSlides[0].role!=='cover')spreadSlides.unshift(makeSlide('cover'));
+  else spreadSlides[0]=makeSlide('cover');
+  spreadActive=0;renderSpreadTabs();toast('Cover set from current card');
+};
+if($('zineEnd'))$('zineEnd').onclick=()=>{
+  spreadSyncFromEditor();
+  if(!spreadSlides.length){spreadSlides.push(makeSlide('page'));spreadSlides.push(makeSlide('end'));}
+  else if(spreadSlides[spreadSlides.length-1].role!=='end')spreadSlides.push(makeSlide('end'));
+  else spreadSlides[spreadSlides.length-1]=makeSlide('end');
+  spreadActive=spreadSlides.length-1;renderSpreadTabs();toast('End card set');
+};
+if($('spreadClear'))$('spreadClear').onclick=()=>{spreadSlides=[];spreadActive=0;renderSpreadTabs();toast('Zine cleared')};
+if($('qsZine'))$('qsZine').onclick=()=>{
+  blankCanvas&&blankCanvas();
+  spreadSlides=[makeSlide('cover'),makeSlide('page'),makeSlide('end')];
+  if($('quoteText'))$('quoteText').value='Title / opening line';
+  if($('creditMain'))$('creditMain').value='Your zine';
+  spreadActive=0;spreadApplyToEditor(0);renderSpreadTabs();
+  toast('Zine started · cover + page + end');
+};
+async function exportSpreadSequence(){
+  if(spreadSlides.length<2)return toast('Add at least 2 pages first');
+  spreadSyncFromEditor();
+  toast('Exporting zine…');
+  showExportProgress(true,'Zine 1/'+spreadSlides.length,10);
   const prev={q:$('quoteText').value,a:$('creditMain').value,s:$('creditSub').value};
   for(let i=0;i<spreadSlides.length;i++){
     const s=spreadSlides[i];
     $('quoteText').value=s.quoteText||'';$('creditMain').value=s.creditMain||'';$('creditSub').value=s.creditSub||'';
-    showExportProgress(true,'Slide '+(i+1)+'/'+spreadSlides.length,15+i/spreadSlides.length*70);
+    if($('captionText'))$('captionText').value=s.captionText||'';
+    showExportProgress(true,'Page '+(i+1)+'/'+spreadSlides.length,15+i/spreadSlides.length*70);
     await new Promise(r=>setTimeout(r,30));
-    download(); // uses current quality tier
-    await new Promise(r=>setTimeout(r,200));
+    download();
+    await new Promise(r=>setTimeout(r,220));
   }
   $('quoteText').value=prev.q;$('creditMain').value=prev.a;$('creditSub').value=prev.s;
   draw();
   showExportProgress(true,'Done',100);
   setTimeout(()=>showExportProgress(false),500);
-  toast('Spread exported · '+spreadSlides.length+' images');
+  toast('Zine exported · '+spreadSlides.length+' images');
+}
+function serializeZinePayload(){
+  spreadSyncFromEditor();
+  // Style once + text per page — no full photo data (URL size)
+  const look={
+    template,font:state.font,filmGrade,treatment,textColor,highlight,format,align,textPos,
+    bgMode:bgMode==='image'?'gradient':bgMode,bgGrad,bgColor,brandStamp,
+    grain:state.grain,vignette:state.vignette,darkness:state.darkness
+  };
+  const pages=spreadSlides.map(s=>({role:s.role,q:s.quoteText,a:s.creditMain,b:s.creditSub,c:s.captionText}));
+  return {v:1,look,pages};
+}
+function copyZineLink(){
+  if(spreadSlides.length<2)return toast('Build a zine with 2+ pages first');
+  try{
+    const payload=serializeZinePayload();
+    const json=JSON.stringify(payload);
+    const b64=btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    if(b64.length>12000){toast('Zine too large for link — export images instead');return}
+    const url=location.href.split('#')[0].split('?')[0]+'?zine='+b64;
+    navigator.clipboard.writeText(url).then(()=>toast('Zine flip link copied (text/style only · no photos)')).catch(()=>prompt('Copy zine link:',url));
+  }catch(e){toast('Could not build zine link')}
+}
+function tryOpenZineFromURL(){
+  try{
+    const q=new URLSearchParams(location.search).get('zine');
+    if(!q)return;
+    const json=decodeURIComponent(escape(atob(q.replace(/-/g,'+').replace(/_/g,'/'))));
+    const data=JSON.parse(json);
+    if(!data||!data.pages||!data.pages.length)return;
+    const L=data.look||{};
+    if(L.template)template=L.template;
+    if(L.font)state.font=L.font;
+    if(L.filmGrade!=null)filmGrade=L.filmGrade;
+    if(L.treatment)treatment=L.treatment;
+    if(L.textColor)textColor=L.textColor;
+    if(L.format)format=L.format;
+    if(L.align)align=L.align;
+    if(L.bgMode)bgMode=L.bgMode;
+    if(L.bgGrad)bgGrad=L.bgGrad;
+    if(L.bgColor)bgColor=L.bgColor;
+    if(L.brandStamp)brandStamp=L.brandStamp;
+    if(L.grain!=null)state.grain=L.grain;
+    if(L.vignette!=null)state.vignette=L.vignette;
+    spreadSlides=data.pages.map(p=>({role:p.role||'page',quoteText:p.q||'',creditMain:p.a||'',creditSub:p.b||'',captionText:p.c||''}));
+    spreadActive=0;
+    try{resizeCanvas();syncFontGrid();renderSpreadTabs();spreadApplyToEditor(0)}catch(e){}
+    // lightweight flip viewer overlay
+    openZineViewer();
+    toast('Zine opened · swipe pages');
+  }catch(e){console.warn('zine url',e)}
+}
+function openZineViewer(){
+  let ov=$('zineViewer');
+  if(!ov){
+    ov=document.createElement('div');ov.id='zineViewer';
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+    ov.innerHTML='<div id="zineViewCard" style="max-width:420px;width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:#111;box-shadow:0 20px 60px rgba(0,0,0,.5)"></div><p class="mini" id="zineViewMeta" style="color:#ccc;margin:14px 0 8px"></p><div style="display:flex;gap:10px"><button type="button" class="btn secondary" id="zinePrev">‹</button><button type="button" class="btn primary" id="zineNext">›</button><button type="button" class="btn secondary" id="zineClose">Close</button></div>';
+    document.body.appendChild(ov);
+    let zi=0;
+    const paint=()=>{
+      spreadApplyToEditor(zi);
+      setTimeout(()=>{
+        const url=canvas.toDataURL('image/jpeg',0.85);
+        const card=$('zineViewCard');
+        card.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:contain">';
+        if($('zineViewMeta'))$('zineViewMeta').textContent=(zi+1)+' / '+spreadSlides.length;
+      },40);
+    };
+    $('zinePrev').onclick=()=>{zi=(zi-1+spreadSlides.length)%spreadSlides.length;paint()};
+    $('zineNext').onclick=()=>{zi=(zi+1)%spreadSlides.length;paint()};
+    $('zineClose').onclick=()=>ov.remove();
+    let sx=0;ov.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+    ov.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40){if(dx<0)zi=(zi+1)%spreadSlides.length;else zi=(zi-1+spreadSlides.length)%spreadSlides.length;paint()}},{passive:true});
+    ov._paint=paint;ov._zi=()=>zi;
+  }
+  ov.style.display='flex';
+  if(ov._paint)ov._paint();
 }
 if($('esSpread'))$('esSpread').onclick=()=>{closeExportSheet();exportSpreadSequence()};
+if($('esZineLink'))$('esZineLink').onclick=()=>{closeExportSheet();copyZineLink()};
+try{setTimeout(tryOpenZineFromURL,400)}catch(e){}
+
 
 
 (function tabStructureOnboard(){
