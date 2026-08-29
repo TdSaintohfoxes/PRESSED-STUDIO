@@ -820,6 +820,10 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 <button class="btn" id="qsSurprise">✦ Surprise</button>
 </div>
 <div class="layout"><aside class="panel"><div class="scroll">
+<div class="tab-onboard hidden" id="tabOnboard" style="margin:0 12px 8px;padding:10px 12px;border-radius:12px;border:1px solid rgba(124,108,240,.35);background:rgba(124,108,240,.1);font-size:12px;display:none;align-items:center;gap:10px;flex-wrap:wrap">
+<span style="flex:1;min-width:160px"><b>New layout:</b> Content (words) · Style (looks/type) · Layout (size/export)</span>
+<button type="button" class="btn secondary" id="tabOnboardOk" style="min-height:32px;font-size:11px;padding:4px 12px">Got it</button>
+</div>
 <div class="edtabs">
 <button class="edtab active" data-zone="words">Content</button>
 <button class="edtab" data-zone="look">Style</button>
@@ -932,9 +936,8 @@ Everybody needs you</textarea></div>
 <label>Highlight color</label>
 <div class="colors" id="highlightColors"><button class="swatch active" data-color="#ffffff" style="background:#fff"></button><button class="swatch" data-color="#facc15" style="background:#facc15"></button><button class="swatch" data-color="#ff8a65" style="background:#ff8a65"></button><button class="swatch" data-color="#d8ff58" style="background:#d8ff58"></button><button class="swatch" data-color="#c4b5fd" style="background:#c4b5fd"></button><button class="swatch" data-color="#111111" style="background:#111"></button><input id="customHighlightColor" type="color" value="#ffffff"></div>
 <div class="field" id="paletteWrap" style="margin-top:12px;display:none"><label style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span>From artwork</span><span class="picker-actions"><button type="button" id="paletteTargetHi" class="active">→ Highlight</button><button type="button" id="paletteTargetTx">→ Text</button></span></label><div class="colors" id="paletteColors"></div><p class="mini" id="paletteNote" style="margin-top:6px"></p></div>
-<button type="button" class="adv-toggle" id="typeMoreToggle" style="margin-top:14px" aria-expanded="false">More type options <span class="chev">›</span></button>
-<div class="adv-body" id="typeMoreBody">
-<label>Opacity</label>
+<!-- Flattened: Style tab is already the detail layer; no nested disclosure -->
+<label style="margin-top:14px">Opacity</label>
 <div class="range-row"><input id="textOpacity" type="range" min="30" max="100" value="100"><output id="textOpacityOut">100%</output></div>
 <label style="margin-top:10px">Letter spacing</label>
 <div class="range-row"><input id="letterSpace" type="range" min="-2" max="12" value="0"><output id="letterSpaceOut">0</output></div>
@@ -950,7 +953,6 @@ Everybody needs you</textarea></div>
 <button type="button" class="preset" id="toggleStroke">Stroke</button>
 </div>
 </div>
-</div>
 <div class="contrast-warn" id="contrastWarn" role="status">
 <span id="contrastMsg">Low contrast on this photo.</span>
 <div class="row"><button type="button" class="btn primary" id="contrastFixBtn" style="min-height:36px;font-size:11px">Auto-adjust</button></div>
@@ -964,15 +966,21 @@ Everybody needs you</textarea></div>
 <div class="section collapsible" data-coll="film">
 <div class="coll-head"><h3>Film look</h3><span class="coll-chev">▾</span></div>
 <div class="coll-body">
-<p class="mini" style="margin:0 0 12px">Packs set grain, vignette &amp; grade together. Fine-tune after if you want.</p>
-<label>Packs</label>
-<div class="film-pack-row">
-<button class="btn secondary" type="button" id="packPortra">Portra</button>
-<button class="btn secondary" type="button" id="packCine">Cine</button>
-<button class="btn secondary" type="button" id="packNight">Night</button>
-<button class="btn secondary" type="button" id="packFade">Fade</button>
+<p class="mini" style="margin:0 0 12px">One pack sets grade + grain + vignette. No hybrid state.</p>
+<label>Pack</label>
+<div class="film-pack-row" id="filmPackRow">
+<button class="btn secondary film-pack" type="button" data-pack="none" id="packNone">None</button>
+<button class="btn secondary film-pack" type="button" data-pack="portra" id="packPortra">Portra</button>
+<button class="btn secondary film-pack" type="button" data-pack="kodak" id="packKodak">Kodak</button>
+<button class="btn secondary film-pack" type="button" data-pack="fuji" id="packFuji">Fuji</button>
+<button class="btn secondary film-pack" type="button" data-pack="cine" id="packCine">Cine</button>
+<button class="btn secondary film-pack" type="button" data-pack="night" id="packNight">Night</button>
+<button class="btn secondary film-pack" type="button" data-pack="fade" id="packFade">Fade</button>
+<button class="btn secondary film-pack" type="button" data-pack="bw" id="packBw">B&amp;W</button>
 </div>
-<label>Grade only</label>
+<button type="button" class="adv-toggle" id="filmGradeOverrideToggle" aria-expanded="false">Advanced: override grade only <span class="chev">›</span></button>
+<div class="adv-body" id="filmGradeOverrideBody">
+<p class="mini" style="margin:0 0 8px">Replaces pack grade only — grain/vignette stay from the pack.</p>
 <div class="triple" style="margin-bottom:8px">
 <button class="preset grade active" data-grade="none">None</button>
 <button class="preset grade" data-grade="portra">Portra</button>
@@ -983,7 +991,8 @@ Everybody needs you</textarea></div>
 <button class="preset grade" data-grade="cine">Cine</button>
 <button class="preset grade" data-grade="bw">B&amp;W</button>
 </div>
-<button type="button" class="adv-toggle" id="filmFineToggle" aria-expanded="false">Fine-tune <span class="chev">›</span></button>
+</div>
+<button type="button" class="adv-toggle" id="filmFineToggle" aria-expanded="false" style="margin-top:8px">Fine-tune grain / leak <span class="chev">›</span></button>
 <div class="adv-body" id="filmFineBody">
 <div class="row"><div class="field"><label>Grain</label><div class="range-row"><input id="grain" type="range" min="0" max="80" value="0"><output id="grainOut">0</output></div></div>
 <div class="field"><label>Vignette</label><div class="range-row"><input id="vignette" type="range" min="0" max="80" value="0"><output id="vignetteOut">0</output></div></div></div>
@@ -996,22 +1005,25 @@ Everybody needs you</textarea></div>
 <!-- ===== FRAME ZONE ===== -->
 <div class="ezone" id="zone-frame">
 <div class="section"><h3>Size</h3>
+<p class="format-cat">Most used</p>
+<div class="format-grid" id="formatMostUsed">
+<button class="preset format active" data-format="square"><b>Feed</b><span>1:1 · 1080×1080</span></button>
+<button class="preset format" data-format="story"><b>Story / Reels</b><span>9:16 · 1080×1920</span></button>
+<button class="preset format" data-format="phonewall"><b>Phone wall</b><span>9:19.5 · 1170×2532</span></button>
+</div>
+<button type="button" class="adv-toggle" id="moreFormatsToggle" aria-expanded="false" style="margin-top:10px">More formats <span class="chev">›</span></button>
+<div class="adv-body" id="moreFormatsBody">
 <p class="format-cat">Social</p>
 <div class="format-grid">
-<button class="preset format active" data-format="square"><b>Feed</b><span>1:1 · 1080×1080</span></button>
 <button class="preset format" data-format="portrait"><b>Portrait</b><span>4:5 · 1080×1350</span></button>
-<button class="preset format" data-format="story"><b>Story / Reels</b><span>9:16 · 1080×1920</span></button>
 <button class="preset format" data-format="landscape"><b>Wide</b><span>16:9 · 1920×1080</span></button>
 <button class="preset format" data-format="xheader"><b>X header</b><span>3:1 · 1500×500</span></button>
 </div>
-<p class="format-cat">Wallpaper</p>
+<p class="format-cat">Wallpaper &amp; print</p>
 <div class="format-grid">
-<button class="preset format" data-format="phonewall"><b>Phone</b><span>9:19.5 · 1170×2532</span></button>
-<button class="preset format" data-format="deskwall"><b>Desktop</b><span>16:9 · 1920×1080</span></button>
-</div>
-<p class="format-cat">Print</p>
-<div class="format-grid">
+<button class="preset format" data-format="deskwall"><b>Desktop</b><span>16:9 · dock zone</span></button>
 <button class="preset format" data-format="a4"><b>A4 poster</b><span>1:√2 · 1240×1754</span></button>
+</div>
 </div>
 <label class="chk-row" style="margin-top:12px"><input type="checkbox" id="safeGuides"> Show safe-area guides</label>
 <p class="mini" id="safeGuideHint" style="margin-top:8px">Guides adapt to the selected format (feed crop, story UI, notch/clock on phone).</p>
@@ -1152,7 +1164,13 @@ Everybody needs you</textarea></div>
 <div class="quality-list" id="exportQualityList">
 <button type="button" class="quality-opt active" data-tier="standard"><div><div class="q-title">Standard</div><div class="q-dim" data-qdim="standard">—</div></div></button>
 <button type="button" class="quality-opt" data-tier="high"><div><div class="q-title">High</div><div class="q-dim" data-qdim="high">—</div></div></button>
-<button type="button" class="quality-opt" data-tier="max"><div><div class="q-title">Ultra</div><div class="q-dim" data-qdim="max">—</div><div class="q-warn" id="ultraWarn" style="display:none">May be slow on this device</div></div></button>
+<button type="button" class="quality-opt" data-tier="max"><div><div class="q-title">Ultra</div><div class="q-dim" data-qdim="max">—</div><div class="q-warn" id="ultraWarn" style="display:none">Ultra: often 2–8 seconds on phones · progress shows while rendering</div></div></button>
+</div>
+<div id="exportProgress" class="hidden" style="margin:8px 0 12px">
+<div style="height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden">
+<div id="exportProgressBar" style="height:100%;width:15%;background:linear-gradient(90deg,var(--accent),#a99bff);border-radius:99px;transition:width .3s"></div>
+</div>
+<p class="mini" id="exportProgressLabel" style="margin:6px 0 0">Rendering…</p>
 </div>
 <button class="btn primary" type="button" id="esPng">Download PNG</button>
 <button class="btn secondary" type="button" id="esJpg">Download JPG</button>
@@ -1268,6 +1286,7 @@ Everybody needs you</textarea></div>
 </div>
 <div class="saved-meta" id="libCount">0 projects · on this device</div>
 <p class="mini" id="libSelHint" style="margin:0 0 12px;display:none">Tap cards to select · then export, add to a collection, or delete.</p>
+<input id="libSearch" type="text" placeholder="Search lyrics, artist, song…" style="margin-bottom:12px">
 <div class="tpl-filters" id="libFilters" style="margin-bottom:14px">
 <button type="button" class="chip active" data-lcat="all">All</button>
 <button type="button" class="chip" data-lcat="lyrics">Lyrics</button>
@@ -1840,7 +1859,7 @@ const FORMAT_META={
   landscape:{label:'Wide',logical:[1280,720],safe:{t:6,b:6,s:4},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
   xheader:{label:'X header',logical:[1500,500],safe:{t:8,b:8,s:3},out:{standard:[1500,500],high:[2250,750],max:[3000,1000]}},
   phonewall:{label:'Phone',logical:[1170,2532],safe:{t:14,b:10,s:6},out:{standard:[1170,2532],high:[1170,2532],max:[1440,3116]}},
-  deskwall:{label:'Desktop',logical:[1280,720],safe:{t:4,b:4,s:3},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
+  deskwall:{label:'Desktop',logical:[1280,720],safe:{t:4,b:12,s:3},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
   a4:{label:'A4',logical:[1240,1754],safe:{t:6,b:6,s:5},out:{standard:[1240,1754],high:[1748,2475],max:[2480,3508]}}
 };
 function formatInfo(f){return FORMAT_META[f]||FORMAT_META.square}
@@ -1959,7 +1978,7 @@ function updateSafeOverlay(){
   const m=formatInfo(format);
   const s=m.safe||{t:6,b:6,s:4};
   if(hint){
-    const tips={story:'Avoid top UI and bottom tab bar.',phonewall:'Keep subject clear of notch/status and home indicator.',xheader:'Leave sides clear — X crops differently on web/app.',a4:'Leave ~5% margin for print trim.',deskwall:'Center subject; edges may crop on ultrawide.'};
+    const tips={story:'Avoid top UI and bottom tab bar.',phonewall:'Keep subject clear of notch/status and home indicator.',xheader:'Leave sides clear — X crops differently on web/app.',a4:'Leave ~5% margin for print trim.',deskwall:'Keep subject above the dock/taskbar zone (bottom ~12%).'};
     hint.textContent=tips[format]||'Guides show a safer zone for this format.';
   }
   if(!showSafeGuides)return;
@@ -1967,6 +1986,9 @@ function updateSafeOverlay(){
   let extra='';
   if(format==='phonewall'){
     extra=`<rect x="30" y="2" width="40" height="3.2" rx="1.5" fill="rgba(139,124,255,.25)"/><text x="50" y="9" text-anchor="middle" fill="rgba(139,124,255,.65)" font-size="2.4" font-family="Inter">clock / notch</text>`;
+  }
+  if(format==='deskwall'){
+    extra=`<rect x="0" y="88" width="100" height="12" fill="rgba(139,124,255,.12)"/><text x="50" y="95" text-anchor="middle" fill="rgba(139,124,255,.65)" font-size="2.4" font-family="Inter">dock / taskbar</text>`;
   }
   ov.innerHTML=`<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="${side}" y="${top}" width="${100-side*2}" height="${100-top-bot}" fill="none" stroke="rgba(139,124,255,.55)" stroke-width=".4" stroke-dasharray="2 1.5"/>${extra}<text x="50" y="${Math.max(3,top-1)}" text-anchor="middle" fill="rgba(139,124,255,.7)" font-size="2.8" font-family="Inter">safe area</text></svg>`;
 }
@@ -2017,7 +2039,25 @@ function buildTplGrid(){
     if(tplCat!=='all'&&m.cat!==tplCat)return;
     const b=document.createElement('button');b.type='button';b.className='tpl-card'+(template===key?' active':'');b.dataset.template=key;
     b.innerHTML=`<div class="tpl-preview ${m.cls}"><div class="tp-img"></div><div class="tp-hi"></div><div class="tp-hi2"></div><div class="tp-bar"></div></div><div class="tpl-name">${m.name}</div><div class="tpl-desc">${m.desc}</div>`;
+    let previewTimer=null,previewSnap=null;
+    const doPreview=()=>{
+      if(template===key)return;
+      previewSnap={template,treatment,align,textPos,font:state.font,textColor,highlight};
+      template=key;draw();
+    };
+    const endPreview=()=>{
+      if(!previewSnap)return;
+      template=previewSnap.template;treatment=previewSnap.treatment;align=previewSnap.align;
+      textPos=previewSnap.textPos;state.font=previewSnap.font;textColor=previewSnap.textColor;highlight=previewSnap.highlight;
+      previewSnap=null;draw();
+    };
+    b.addEventListener('pointerenter',()=>{if(window.matchMedia('(hover:hover)').matches){clearTimeout(previewTimer);previewTimer=setTimeout(doPreview,220)}});
+    b.addEventListener('pointerleave',()=>{clearTimeout(previewTimer);endPreview()});
+    b.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){clearTimeout(previewTimer);previewTimer=setTimeout(doPreview,380)}});
+    b.addEventListener('pointerup',()=>{clearTimeout(previewTimer)});
+    b.addEventListener('pointercancel',()=>{clearTimeout(previewTimer);endPreview()});
     b.onclick=()=>{
+      previewSnap=null; // commit
       template=key;
       box.querySelectorAll('.tpl-card').forEach(x=>x.classList.toggle('active',x.dataset.template===key));
       // Smart defaults per layout — less manual fiddling
@@ -2137,10 +2177,10 @@ if($('esCaption'))$('esCaption').onclick=async()=>{closeExportSheet();if($('copy
 if($('esShare'))$('esShare').onclick=()=>{closeExportSheet();shareToX()};
 if($('esSave'))$('esSave').onclick=()=>{closeExportSheet();if(typeof saveToLibrary==='function')saveToLibrary()};
 // Film packs
-if($('packPortra'))$('packPortra').onclick=()=>applyFilmPack('portra');
-if($('packCine'))$('packCine').onclick=()=>applyFilmPack('cine');
-if($('packNight'))$('packNight').onclick=()=>applyFilmPack('night');
-if($('packFade'))$('packFade').onclick=()=>applyFilmPack('fade');
+
+
+
+
 function updateCreditPreview(){
   const el=$('creditPreview');if(!el)return;
   el.textContent='Preview: '+formatCreditLine();
@@ -2242,18 +2282,25 @@ function applyFilmGrade(x,y,w,h){
   }
   ctx.restore();
 }
+let activeFilmPack='none';
 function applyFilmPack(name){
   const packs={
+    none:{filmGrade:'none',grain:0,vignette:0,leak:0,brightness:1,darkness:0.35},
     portra:{filmGrade:'portra',grain:22,vignette:18,leak:0,brightness:1.05,darkness:0.28},
+    kodak:{filmGrade:'kodak',grain:20,vignette:16,leak:4,leakColor:'#ff8a3d',brightness:1.02,darkness:0.3},
+    fuji:{filmGrade:'fuji',grain:18,vignette:14,leak:0,brightness:1.06,darkness:0.26},
     cine:{filmGrade:'cine',grain:16,vignette:28,leak:12,leakColor:'#ff6b35',brightness:1,darkness:0.4},
     night:{filmGrade:'night',grain:20,vignette:40,leak:8,leakColor:'#6b9fff',brightness:0.92,darkness:0.48},
-    fade:{filmGrade:'faded',grain:28,vignette:22,leak:6,leakColor:'#ffb07a',brightness:1.08,darkness:0.22}
+    fade:{filmGrade:'faded',grain:28,vignette:22,leak:6,leakColor:'#ffb07a',brightness:1.08,darkness:0.22},
+    bw:{filmGrade:'bw',grain:24,vignette:30,leak:0,brightness:1,darkness:0.38}
   };
   const p=packs[name];if(!p)return;
+  activeFilmPack=name;
   filmGrade=p.filmGrade;
   state.grain=p.grain/100;state.vignette=p.vignette/100;state.leak=p.leak/100;
   state.brightness=p.brightness;state.darkness=p.darkness;
   if(p.leakColor)state.leakColor=p.leakColor;
+  document.querySelectorAll('.film-pack').forEach(x=>x.classList.toggle('active',x.dataset.pack===name));
   document.querySelectorAll('.grade').forEach(x=>x.classList.toggle('active',x.dataset.grade===filmGrade));
   if($('grain')){$('grain').value=p.grain;$('grainOut').textContent=p.grain}
   if($('vignette')){$('vignette').value=p.vignette;$('vignetteOut').textContent=p.vignette}
@@ -2261,8 +2308,13 @@ function applyFilmPack(name){
   if($('brightness')){$('brightness').value=Math.round(p.brightness*100);$('brightnessOut').textContent=Math.round(p.brightness*100)}
   if($('darkness')){$('darkness').value=Math.round(p.darkness*100);$('darknessOut').textContent=Math.round(p.darkness*100)}
   if(p.leakColor&&$('leakColor'))$('leakColor').value=p.leakColor;
-  draw();toast(name.charAt(0).toUpperCase()+name.slice(1)+' pack applied');
+  draw();toast(name==='none'?'Film cleared':(name.charAt(0).toUpperCase()+name.slice(1)+' pack'));
 }
+document.querySelectorAll('.film-pack').forEach(b=>{
+  b.onclick=()=>applyFilmPack(b.dataset.pack||'none');
+});
+// Grade override only when advanced open — still sets filmGrade but pack id stays
+
 let _grainTile=null;
 function getGrainTile(){
   if(_grainTile)return _grainTile;
@@ -2962,8 +3014,18 @@ function syncBgUI(){
   if(grad)grad.classList.toggle('hidden',bgMode!=='gradient');
 }
 
+function showExportProgress(on,label,pct){
+  const wrap=$('exportProgress'),bar=$('exportProgressBar'),lab=$('exportProgressLabel');
+  if(!wrap)return;
+  if(!on){wrap.classList.add('hidden');return}
+  wrap.classList.remove('hidden');
+  if(lab&&label)lab.textContent=label;
+  if(bar&&pct!=null)bar.style.width=Math.max(8,Math.min(100,pct))+'%';
+}
 function download(){
   try{
+    showExportProgress(true, exportTier==='max'?'Ultra render — ~2–8s on this device…':('Rendering '+exportTier+'…'), 20);
+
     const d=exportDims();
     const targetScale=d[0]/LW;
     const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
@@ -2979,8 +3041,8 @@ function download(){
     a.click();
     if(needBoost){liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw()}
     try{pushRecent()}catch(e){}
-    toast('Exported '+d[0]+'×'+d[1]+' ✓');
-  }catch(e){console.warn(e);drawImmediate();const a=document.createElement('a');a.download='pressed-card.png';a.href=canvas.toDataURL('image/png');a.click();toast('Exported (fallback)')}
+    showExportProgress(true,'Done',100);setTimeout(()=>showExportProgress(false),400);toast('Exported '+d[0]+'×'+d[1]+' ✓');if(exportTier==='max')try{maybeShowBackupNudge('ultra')}catch(e){}
+  }catch(e){console.warn(e);drawImmediate();const a=document.createElement('a');a.download='pressed-card.png';a.href=canvas.toDataURL('image/png');a.click();showExportProgress(false);toast('Exported (fallback)')}
 }
 function downloadJpg(){
   try{
@@ -2995,7 +3057,9 @@ function downloadJpg(){
   }catch(e){drawImmediate();const a=document.createElement('a');a.download='pressed-card.jpg';a.href=canvas.toDataURL('image/jpeg',0.96);a.click()}
 }
 // Header PNG opens export sheet; direct PNG still available as downloadBtn2
-if($('downloadBtn2'))$('downloadBtn2').onclick=download;
+if($('downloadBtn2'))$('downloadBtn2').onclick=openExportSheet;
+if($('downloadJpgBtn'))$('downloadJpgBtn').onclick=openExportSheet;
+if($('downloadStoryBtn'))$('downloadStoryBtn').onclick=openExportSheet;
 if($('renderBtn'))$('renderBtn').onclick=drawImmediate;
 if($('copyTextBtn'))$('copyTextBtn').onclick=async()=>{try{await navigator.clipboard.writeText($('quoteText').value);status('Text copied ✓','ok')}catch{status('Could not copy text.','err')}};
 async function shareToX(){
@@ -3232,9 +3296,10 @@ function wireAdvToggle(btnId, bodyId){
   const btn=$(btnId), body=$(bodyId); if(!btn||!body)return;
   btn.onclick=()=>{const open=body.classList.toggle('open');btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',open?'true':'false')};
 }
-wireAdvToggle('typeMoreToggle','typeMoreBody');
 wireAdvToggle('filmFineToggle','filmFineBody');
+wireAdvToggle('filmGradeOverrideToggle','filmGradeOverrideBody');
 wireAdvToggle('frameAdvToggle','frameAdvBody');
+wireAdvToggle('moreFormatsToggle','moreFormatsBody');
 
 // text nudge
 if($('nudgeUp'))$('nudgeUp').onclick=()=>{textOffset-=18;draw()};
@@ -3424,13 +3489,19 @@ async function saveToLibrary(){
   try{maybeShowBackupNudge()}catch(e){}
 }
 const BACKUP_NUDGE_KEY='pressed_backup_nudge_v1';
-function maybeShowBackupNudge(){
+function maybeShowBackupNudge(reason){
   try{
     if(localStorage.getItem(BACKUP_NUDGE_KEY)==='1')return;
     const n=loadLib().length;
-    if(n>=3){
+    const highValue=reason==='ultra'||reason==='collection'||reason==='force';
+    if(n>=3||highValue){
       const el=$('backupNudge');
-      if(el)el.classList.add('show');
+      if(el){
+        el.classList.add('show');
+        const span=el.querySelector('span');
+        if(span&&reason==='ultra')span.textContent='You exported Ultra quality — download a backup so high-res work isn’t lost.';
+        if(span&&reason==='collection')span.textContent='Saved to a collection — back up so those projects travel with you.';
+      }
     }
   }catch(e){}
 }
@@ -3451,6 +3522,12 @@ function renderLibrary(){
   if(libFilter==='lyrics')arr=arr.filter(p=>(p.cfg&&p.cfg.mode)==='lyrics'||/lyric/i.test(p.name||''));
   else if(libFilter==='quote')arr=arr.filter(p=>(p.cfg&&p.cfg.mode)==='quote'||/quote/i.test(p.name||''));
   else if(libFilter==='film')arr=arr.filter(p=>{const g=p.cfg&&p.cfg.filmGrade;return g&&g!=='none'});
+  const q=(($('libSearch')&&$('libSearch').value)||'').trim().toLowerCase();
+  if(q)arr=arr.filter(p=>{
+    const c=p.cfg||{};
+    const blob=[p.name,c.quoteText,c.creditMain,c.creditSub,c.captionText].join(' ').toLowerCase();
+    return blob.includes(q);
+  });
   const total=loadLib().length;
   if($('libCount'))$('libCount').textContent=total+(libSelecting&&libSelected.size?' · '+libSelected.size+' selected':' projects · on this device');
   const box=$('libGrid');if(!box)return;box.innerHTML='';
@@ -3471,6 +3548,7 @@ function renderLibrary(){
     box.appendChild(c);
   });
 }
+if($('libSearch'))$('libSearch').oninput=()=>renderLibrary();
 document.querySelectorAll('#libFilters .chip').forEach(c=>c.onclick=()=>{
   libFilter=c.dataset.lcat||'all';
   document.querySelectorAll('#libFilters .chip').forEach(x=>x.classList.toggle('active',x===c));
@@ -3515,7 +3593,7 @@ function renderCollections(){
     box.appendChild(div);
   });
 }
-$('newCollectionBtn').onclick=()=>{const title=prompt('Name this collection:');if(!title)return;const arr=loadColl();arr.unshift({id:'c'+Date.now(),title,cardIds:[]});saveColl(arr);renderCollections()};
+$('newCollectionBtn').onclick=()=>{const title=prompt('Name this collection:');if(!title)return;const arr=loadColl();arr.unshift({id:'c'+Date.now(),title,cardIds:[]});saveColl(arr);renderCollections();try{maybeShowBackupNudge('collection')}catch(e){}};
 let activeCollectionId=null;
 function openCollection(id){activeCollectionId=id;$('collectionsList').classList.add('hidden');$('collectionDetail').classList.remove('hidden');$('collLibPicker').classList.add('hidden');renderCollectionDetail()}
 function renderCollectionDetail(){
@@ -3588,9 +3666,15 @@ $('collExportZip').onclick=async()=>{
   const c=loadColl().find(x=>x.id===activeCollectionId);const lib=loadLib();
   const cards=c.cardIds.map(id=>lib.find(p=>p.id===id)).filter(Boolean);
   if(!cards.length)return toast('Nothing to export yet.');
-  toast('Building ZIP…');
+  toast('Building ZIP 0/'+cards.length+'…');
   const files=[];
-  for(let i=0;i<cards.length;i++){const url=await configToPNG(cards[i].cfg);files.push({name:(i+1)+'-'+(cards[i].name||'card').replace(/[^a-z0-9]+/gi,'-')+'.png',data:dataURLToBytes(url)})}
+  for(let i=0;i<cards.length;i++){
+    const url=await configToPNG(cards[i].cfg);
+    files.push({name:(i+1)+'-'+(cards[i].name||'card').replace(/[^a-z0-9]+/gi,'-')+'.png',data:dataURLToBytes(url)});
+    if(i%2===1)await new Promise(r=>setTimeout(r,0));
+    if(i%3===0)toast('Building ZIP '+(i+1)+'/'+cards.length+'…');
+  }
+  await new Promise(r=>setTimeout(r,0));
   const blob=buildZip(files);const a=document.createElement('a');a.download=(c.title||'collection').replace(/[^a-z0-9]+/gi,'-')+'.zip';a.href=URL.createObjectURL(blob);a.click();
   toast('ZIP ready ✓');
 };
@@ -3616,9 +3700,11 @@ if($('redoBtn'))$('redoBtn').onclick=redoHistory;
 document.addEventListener('input',e=>{if(e.target.closest('.panel')||e.target.closest('#view-moods'))pScheduleHistory()});
 document.addEventListener('change',e=>{if(e.target.closest('.panel')||e.target.closest('#view-moods'))pScheduleHistory()});
 document.addEventListener('keydown',e=>{
+  const t=e.target,tag=(t&&t.tagName||'').toLowerCase();
+  const typing=tag==='input'||tag==='textarea'||tag==='select'||(t&&t.isContentEditable);
   const mod=e.ctrlKey||e.metaKey;
   if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redoHistory():undoHistory()}
-  else if(mod&&e.key.toLowerCase()==='s'){e.preventDefault();saveToLibrary()}
+  else if(mod&&e.key.toLowerCase()==='s'){if(!typing){e.preventDefault();saveToLibrary()}}
   else if(e.key==='Escape'){if($('carouselOv').classList.contains('show'))$('carouselClose').click()}
 });
 (function initDraft(){
@@ -3655,6 +3741,21 @@ const LOOKBOOK=[
 ];
 function renderLookbook(){
   const box=$('lookbookGrid');if(!box)return;box.innerHTML='';
+  try{
+    const imported=JSON.parse(localStorage.getItem('pressed_imported_looks_v1')||'[]');
+    if(imported.length){
+      const head=document.createElement('div');head.style.gridColumn='1/-1';
+      head.innerHTML='<p class="format-cat" style="margin:0 0 8px">Imported Looks</p>';
+      box.appendChild(head);
+      imported.slice(0,8).forEach((il,idx)=>{
+        const c=document.createElement('button');c.type='button';c.className='tpl-card';
+        c.innerHTML='<div style="padding:14px"><b>Imported</b><div class="mini">Shared look · tap to apply</div></div>';
+        c.onclick=()=>{const full=JSON.parse(localStorage.getItem('pressed_imported_looks_v1')||'[]')[idx];if(full&&full.code)applyLookCode(full.code);else if(il.code)applyLookCode(il.code)};
+        box.appendChild(c);
+      });
+    }
+  }catch(e){}
+
   // Daily quote card folded into Looks
   try{
     const e=(typeof DAILY!=='undefined'&&DAILY[dailyIdx])?DAILY[dailyIdx]:null;
@@ -3709,9 +3810,16 @@ if($('libDeleteSel'))$('libDeleteSel').onclick=()=>{
 if($('libExportSel'))$('libExportSel').onclick=async()=>{
   const cards=loadLib().filter(p=>libSelected.has(p.id));
   if(!cards.length)return toast('Nothing selected');
-  toast('Building ZIP…');
+  toast('Building ZIP 0/'+cards.length+'…');
   const files=[];
-  for(let i=0;i<cards.length;i++){const url=await configToPNG(cards[i].cfg);files.push({name:(i+1)+'-'+(cards[i].name||'card').replace(/[^a-z0-9]+/gi,'-')+'.png',data:dataURLToBytes(url)})}
+  for(let i=0;i<cards.length;i++){
+    const url=await configToPNG(cards[i].cfg);
+    files.push({name:(i+1)+'-'+(cards[i].name||'card').replace(/[^a-z0-9]+/gi,'-')+'.png',data:dataURLToBytes(url)});
+    if(i%2===1)await new Promise(r=>setTimeout(r,0)); // yield so UI stays responsive
+    if(i%3===0)toast('Building ZIP '+(i+1)+'/'+cards.length+'…');
+  }
+  toast('Zipping…');
+  await new Promise(r=>setTimeout(r,0));
   const blob=buildZip(files);const a=document.createElement('a');a.download='pressed-selection.zip';a.href=URL.createObjectURL(blob);a.click();
   toast('ZIP ready ✓');
 };
@@ -3819,9 +3927,10 @@ function updatePairChip(){
 if($('pairChip'))$('pairChip').onclick=()=>{
   const pair=FONT_PAIRS[state.font];
   if(!pair)return;
-  // Apply pair to credit feel: keep display font for quote, store credit font preference
   state.creditFont=pair;
-  toast('Caption/credit pairs with '+pair);
+  artCredit.font=pair;
+  try{syncArtifactUI()}catch(e){}
+  toast('Credit line → '+pair);
   draw();
 };
 // Hook font changes
@@ -3882,6 +3991,11 @@ function applyLookCode(code){
     try{syncUIFromState()}catch(e){}
     resizeCanvas();draw();
     toast('Look applied — add your words & photo');
+    try{
+      const arr=JSON.parse(localStorage.getItem('pressed_imported_looks_v1')||'[]');
+      arr.unshift({id:'il'+Date.now(),code:code,at:Date.now(),label:'Imported look'});
+      localStorage.setItem('pressed_imported_looks_v1',JSON.stringify(arr.slice(0,24)));
+    }catch(e){}
     return true;
   }catch(e){toast('Could not read that Look code');return false}
 }
@@ -3977,7 +4091,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v23';
+      const CACHE='pressed-v24';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -4057,6 +4171,18 @@ async function idbDel(key){
 try{resizeCanvas()}catch(e){}
 document.body.classList.add('show-m-actions'); // start on Create
 try{updateExportMeta();updatePairChip()}catch(e){}
+
+(function tabStructureOnboard(){
+  try{
+    if(localStorage.getItem('pressed_tab_ui_v1')==='1')return;
+    const hasData=(loadLib&&loadLib().length>0)||(loadAccounts&&loadAccounts().length>0);
+    if(!hasData){localStorage.setItem('pressed_tab_ui_v1','1');return}
+    const el=$('tabOnboard');
+    if(el){el.style.display='flex';el.classList.remove('hidden')}
+    if($('tabOnboardOk'))$('tabOnboardOk').onclick=()=>{if(el)el.style.display='none';localStorage.setItem('pressed_tab_ui_v1','1')};
+  }catch(e){}
+})();
+
 renderDaily();renderMoods();renderLibrary();renderCollections();renderLookbook();renderRecents();
 updateEmptyGuide();updateSafeOverlay();
 if(document.fonts)document.fonts.ready.then(()=>{drawImmediate();updateEmptyGuide()});else{drawImmediate();updateEmptyGuide()}
