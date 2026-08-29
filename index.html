@@ -812,10 +812,21 @@ button,input,textarea,select{font:inherit}button{touch-action:manipulation}.btn{
 
 <!-- ===== CREATE ===== -->
 <section id="view-create" class="view active">
+<div class="series-bar-wrap" style="margin:0 0 10px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+<span class="mini" style="letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--accent2)">Series (locked Look)</span>
+<button type="button" class="btn secondary" id="seriesNew" style="min-height:32px;font-size:10px;padding:4px 10px">＋ New series</button>
+</div>
+<div class="tpl-filters" id="seriesBar" style="margin:0"></div>
+<p class="mini" style="margin:6px 0 0">Series locks brand look for production. Collections stay folders for finished cards.</p>
+</div>
 <div class="quickstart">
 <button class="btn secondary" id="qsBlank">＋ Blank</button>
 <button class="btn secondary" id="qsGenius">Lyric card</button>
 <button class="btn secondary" id="qsFilm">Film look</button>
+<button class="btn secondary" id="qsFold">Fold pull-quote</button>
+<button class="btn secondary" id="qsYT">Lena Vale title</button>
+<button class="btn secondary" id="qsPunk">Essay thumb</button>
 <button class="btn secondary" id="qsPlain">Text only</button>
 <button class="btn" id="qsSurprise">✦ Surprise</button>
 </div>
@@ -895,6 +906,8 @@ Everybody needs you</textarea></div>
 <button type="button" class="chip" data-cat="matchday">Matchday</button>
 <button type="button" class="chip" data-cat="games">Games</button>
 <button type="button" class="chip" data-cat="objects">Objects</button>
+<button type="button" class="chip" data-cat="fold">Fold</button>
+<button type="button" class="chip" data-cat="youtube">YouTube</button>
 </div>
 <div class="tpl-grid" id="tplGrid"></div>
 </div>
@@ -1039,6 +1052,7 @@ Everybody needs you</textarea></div>
 <div class="format-grid">
 <button class="preset format" data-format="portrait"><b>Portrait</b><span>4:5 · 1080×1350</span></button>
 <button class="preset format" data-format="landscape"><b>Wide</b><span>16:9 · 1920×1080</span></button>
+<button class="preset format" data-format="ytthumb"><b>YT Thumbnail</b><span>16:9 · 1280×720</span></button>
 <button class="preset format" data-format="xheader"><b>X header</b><span>3:1 · 1500×500</span></button>
 </div>
 <p class="format-cat">Wallpaper &amp; print</p>
@@ -1972,6 +1986,7 @@ const FORMAT_META={
   portrait:{label:'Portrait',logical:[1080,1350],safe:{t:5,b:5,s:4},out:{standard:[1080,1350],high:[1620,2025],max:[2160,2700]}},
   story:{label:'Story',logical:[1080,1920],safe:{t:12.5,b:14,s:5},out:{standard:[1080,1920],high:[1440,2560],max:[1440,2560]}},
   landscape:{label:'Wide',logical:[1280,720],safe:{t:6,b:6,s:4},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
+  ytthumb:{label:'YT Thumbnail',logical:[1280,720],safe:{t:8,b:10,s:6},out:{standard:[1280,720],high:[1280,720],max:[1920,1080]}},
   xheader:{label:'X header',logical:[1500,500],safe:{t:8,b:8,s:3},out:{standard:[1500,500],high:[2250,750],max:[3000,1000]}},
   phonewall:{label:'Phone',logical:[1170,2532],safe:{t:14,b:10,s:6},out:{standard:[1170,2532],high:[1170,2532],max:[1440,3116]}},
   deskwall:{label:'Desktop',logical:[1280,720],safe:{t:4,b:12,s:3},out:{standard:[1920,1080],high:[2560,1440],max:[3840,2160]}},
@@ -2140,13 +2155,50 @@ const TPL_META={
   bootscreen:{name:'Boot screen',desc:'Press start',cls:'pv-boot',cat:'games'},
   advisory:{name:'Parental Advisory',desc:'Explicit sticker',cls:'pv-pa',cat:'objects'},
   album:{name:'Album cover',desc:'LP / CD face',cls:'pv-album',cat:'objects'}
-};
+,
+  fold:{name:'The Fold',desc:'NME-style pull-quote · byline',cls:'pv-news',cat:'fold'},
+  yttitle:{name:'Lena Vale Files',desc:'Horror title card · vignette',cls:'pv-minimal',cat:'youtube'},
+  ytpunk:{name:'Essay · Punk',desc:'High-contrast video essay',cls:'pv-poster',cat:'youtube'}};
 let tplCat='all';
 let layoutOpts={
   ledColor:'amber',cardFoil:true,cardNum:'14',cardTeam:'HOME',
   cartSystem:'snes',dialogueStyle:'rpg',bootPrompt:'PRESS START',
   advisoryOn:true,albumSpine:true,scarfPos:'middle',programmeAccent:'#8B1E2D'
 };
+
+function applyProductionLook(key){
+  // Fold / YouTube branded starting points (still editable Looks)
+  if(key==='fold'){
+    bgMode=img?'image':'gradient';bgGrad='paper';
+    state.font='Playfair Display';treatment='plain';textColor='#111111';align='left';
+    creditFmt='dash';brandStamp='The Fold';
+    artCredit.font='Inter';artStamp.font='Inter';artStamp.corner='br';
+    filmGrade='none';state.grain=0.08;state.vignette=0.1;
+    if($('creditMain')&&!$('creditMain').value)$('creditMain').value='Words by Author';
+    if($('creditSub')&&!$('creditSub').value)$('creditSub').value='The Fold';
+  }else if(key==='yttitle'){
+    bgMode=img?'image':'gradient';bgGrad='night';
+    state.font='Special Elite';treatment='plain';textColor='#f2ebe0';align='center';
+    filmGrade='night';state.grain=0.22;state.vignette=0.42;state.darkness=0.45;
+    brandStamp='THE LENA VALE FILES';
+    format=format==='square'?'ytthumb':format;
+    if($('creditMain')&&!$('creditMain').value)$('creditMain').value='THE LENA VALE FILES';
+    if($('creditSub')&&!$('creditSub').value)$('creditSub').value='Episode title';
+  }else if(key==='ytpunk'){
+    bgMode=img?'image':'solid';bgColor='#0a0a0a';
+    state.font='Anton';treatment='plain';textColor='#ffffff';align='center';
+    filmGrade='bw';state.grain=0.12;state.vignette=0.12;state.darkness=0.25;
+    brandStamp='ESSAY';
+    format=format==='square'?'ytthumb':format;
+  }
+  if($('brandStamp'))$('brandStamp').value=brandStamp;
+  try{localStorage.setItem('pressed_brand_v1',brandStamp)}catch(e){}
+  document.querySelectorAll('.grade').forEach(x=>x.classList.toggle('active',x.dataset.grade===filmGrade));
+  if($('grain')){$('grain').value=Math.round((state.grain||0)*100);$('grainOut').textContent=Math.round((state.grain||0)*100)}
+  if($('vignette')){$('vignette').value=Math.round((state.vignette||0)*100);$('vignetteOut').textContent=Math.round((state.vignette||0)*100)}
+  try{syncFontGrid();syncArtifactUI();resizeCanvas()}catch(e){}
+}
+
 function buildTplGrid(){
   const box=$('tplGrid');if(!box)return;box.innerHTML='';
   Object.keys(TPL_META).forEach(key=>{
@@ -2190,7 +2242,10 @@ function buildTplGrid(){
         album:{treatment:'plain',align:'left',font:'Anton'},
         scarf:{treatment:'plain',align:'center',font:'Anton'},
         programme:{treatment:'plain',align:'left',font:'Playfair Display',textColor:'#1a1410'}
-      };
+      ,
+        fold:{treatment:'plain',align:'left',font:'Playfair Display',textColor:'#111111',textPos:'middle'},
+        yttitle:{treatment:'plain',align:'center',font:'Special Elite',textColor:'#f2ebe0',textPos:'middle'},
+        ytpunk:{treatment:'plain',align:'center',font:'Anton',textColor:'#ffffff',textPos:'middle'}};
       const s=smart[key];
       if(s){
         if(s.treatment){treatment=s.treatment;document.querySelectorAll('.style').forEach(x=>x.classList.toggle('active',x.dataset.style===treatment))}
@@ -2200,6 +2255,7 @@ function buildTplGrid(){
         if(s.textColor)textColor=s.textColor;
         if(s.highlight)highlight=s.highlight;
       }
+      try{applyProductionLook(key)}catch(e){}
       renderLayoutOpts();draw();
     };
     box.appendChild(b);
@@ -2588,7 +2644,7 @@ if(freeLayout){
   cover(W,H);
   drawFreeLayers(W,H);
 }else{
-  const drawers={genius:drawGenius,polaroid:drawPolaroid,ticket:drawTicket,poster:drawPoster,newspaper:drawNewspaper,tradecard:drawTradeCard,led:drawLED,programme:drawProgramme,scarf:drawScarf,cartridge:drawCartridge,dialogue:drawDialogue,bootscreen:drawBoot,advisory:drawAdvisory,album:drawAlbum};
+  const drawers={genius:drawGenius,polaroid:drawPolaroid,ticket:drawTicket,poster:drawPoster,newspaper:drawNewspaper,tradecard:drawTradeCard,led:drawLED,programme:drawProgramme,scarf:drawScarf,cartridge:drawCartridge,dialogue:drawDialogue,bootscreen:drawBoot,advisory:drawAdvisory,album:drawAlbum,fold:drawNewspaper,yttitle:drawClassic,ytpunk:drawPoster};
   if(drawers[template])drawers[template](W,H);else drawClassic(W,H);
   // Still register a hit area on main text for easy grab → free layout
   registerMainTextHit(W,H);
@@ -3215,6 +3271,28 @@ function syncBgUI(){
   if(grad)grad.classList.toggle('hidden',bgMode!=='gradient');
 }
 
+
+function productionFilename(ext){
+  const slug=s=>(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'card';
+  const d=new Date();const ds=d.getFullYear()+('-'+String(d.getMonth()+1).padStart(2,'0'))+('-'+String(d.getDate()).padStart(2,'0'));
+  const main=($('creditMain')&&$('creditMain').value)||'';
+  const sub=($('creditSub')&&$('creditSub').value)||'';
+  const q=($('quoteText')&&$('quoteText').value||'').split('\n')[0];
+  if(template==='fold'||(brandStamp||'').toLowerCase().includes('fold')){
+    return 'fold-'+slug(sub||main||q)+'-'+ds+'.'+ext;
+  }
+  if(template==='yttitle'||(brandStamp||'').toUpperCase().includes('LENA VALE')){
+    const ep=slug(sub||main||'ep');
+    return 'lenavale-'+ep+'-thumbnail.'+ext;
+  }
+  if(template==='ytpunk'){
+    return 'essay-'+slug(main||q||'thumb')+'-'+ds+'.'+ext;
+  }
+  const ser=getActiveSeries&&getActiveSeries();
+  if(ser)return slug(ser.name)+'-'+slug(sub||main||q)+'.'+ext;
+  return 'pressed-'+format+'-'+(exportTier||'std')+'.'+ext;
+}
+
 function showExportProgress(on,label,pct){
   const wrap=$('exportProgress'),bar=$('exportProgressBar'),lab=$('exportProgressLabel');
   if(!wrap)return;
@@ -3237,7 +3315,7 @@ function download(){
       _realDraw();
     }else drawImmediate();
     const a=document.createElement('a');
-    a.download='pressed-'+format+'-'+(exportTier||'std')+'.png';
+    a.download=productionFilename('png');
     a.href=canvas.toDataURL('image/png');
     a.click();
     if(needBoost){liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw()}
@@ -3252,7 +3330,7 @@ function downloadJpg(){
     const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
     const needBoost=Math.abs(targetScale-liveScale)>0.05;
     if(needBoost){liveScale=targetScale;canvas.width=d[0];canvas.height=d[1];_realDraw()}else drawImmediate();
-    const a=document.createElement('a');a.download='pressed-'+format+'.jpg';a.href=canvas.toDataURL('image/jpeg',0.96);a.click();
+    const a=document.createElement('a');a.download=productionFilename('jpg');a.href=canvas.toDataURL('image/jpeg',0.96);a.click();
     if(needBoost){liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw()}
     try{pushRecent()}catch(e){}
   }catch(e){drawImmediate();const a=document.createElement('a');a.download='pressed-card.jpg';a.href=canvas.toDataURL('image/jpeg',0.96);a.click()}
@@ -3485,6 +3563,23 @@ if($('qsPlain'))$('qsPlain').onclick=()=>{
   textOffset=0;syncBgUI();updateEmptyGuide();draw();
   toast('Text-only card — type your line');
 };
+
+if($('qsFold'))$('qsFold').onclick=()=>{
+  img=null;bgMode='gradient';bgGrad='paper';
+  applyConfig({template:'fold',treatment:'plain',textColor:'#111111',align:'left',font:'Playfair Display',filmGrade:'none',format:format});
+  applyProductionLook('fold');draw();toast('Fold pull-quote ready');
+};
+if($('qsYT'))$('qsYT').onclick=()=>{
+  img=null;bgMode='gradient';bgGrad='night';format='ytthumb';
+  applyConfig({template:'yttitle',treatment:'plain',textColor:'#f2ebe0',align:'center',font:'Special Elite',filmGrade:'night',format:'ytthumb'});
+  applyProductionLook('yttitle');draw();toast('Lena Vale title card');
+};
+if($('qsPunk'))$('qsPunk').onclick=()=>{
+  img=null;bgMode='solid';bgColor='#0a0a0a';format='ytthumb';
+  applyConfig({template:'ytpunk',treatment:'plain',textColor:'#ffffff',align:'center',font:'Anton',filmGrade:'bw',format:'ytthumb'});
+  applyProductionLook('ytpunk');draw();toast('Essay thumbnail');
+};
+
 if($('qsSurprise'))$('qsSurprise').onclick=()=>{if(typeof surpriseMe==='function')surpriseMe();else if($('surpriseBtn'))$('surpriseBtn').click()};
 // Film pack quickstart
 if($('qsFilm'))$('qsFilm').onclick=()=>{
@@ -4312,7 +4407,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v25';
+      const CACHE='pressed-v26';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
@@ -4391,7 +4486,65 @@ async function idbDel(key){
 // ============================================================
 try{resizeCanvas()}catch(e){}
 document.body.classList.add('show-m-actions'); // start on Create
-try{updateExportMeta();updatePairChip()}catch(e){}
+
+// ---- Series (locked Look for production runs) — distinct from Collections (folders) ----
+const SERIES_KEY='pressed_series_v1';
+let activeSeriesId=null;
+function loadSeries(){try{return JSON.parse(localStorage.getItem(SERIES_KEY)||'[]')}catch(e){return[]}}
+function saveSeries(arr){try{localStorage.setItem(SERIES_KEY,JSON.stringify(arr))}catch(e){}}
+function getActiveSeries(){return loadSeries().find(s=>s.id===activeSeriesId)||null}
+function applySeriesLook(series){
+  if(!series||!series.look)return;
+  const L=series.look;
+  if(L.template)template=L.template;
+  if(L.font)state.font=L.font;
+  if(L.filmGrade!=null)filmGrade=L.filmGrade;
+  if(L.treatment)treatment=L.treatment;
+  if(L.textColor)textColor=L.textColor;
+  if(L.stamp)brandStamp=L.stamp;
+  if(L.format)format=L.format;
+  if(L.creditFmt)creditFmt=L.creditFmt;
+  if(L.grain!=null)state.grain=L.grain;
+  if(L.vignette!=null)state.vignette=L.vignette;
+  if(L.bgMode)bgMode=L.bgMode;
+  if(L.bgGrad)bgGrad=L.bgGrad;
+  if(L.bgColor)bgColor=L.bgColor;
+  try{applyProductionLook(template)}catch(e){}
+  try{syncFontGrid();resizeCanvas();syncArtifactUI()}catch(e){}
+  if($('brandStamp'))$('brandStamp').value=brandStamp;
+  draw();
+}
+function captureSeriesLook(){
+  return{template,font:state.font,filmGrade,treatment,textColor,stamp:brandStamp,format,creditFmt,grain:state.grain,vignette:state.vignette,bgMode,bgGrad,bgColor};
+}
+function renderSeriesBar(){
+  const bar=$('seriesBar');if(!bar)return;
+  const arr=loadSeries();
+  bar.innerHTML='';
+  const none=document.createElement('button');none.type='button';none.className='chip'+(activeSeriesId? '':' active');
+  none.textContent='No series';none.onclick=()=>{activeSeriesId=null;renderSeriesBar();toast('Series unlocked')};
+  bar.appendChild(none);
+  arr.forEach(s=>{
+    const b=document.createElement('button');b.type='button';b.className='chip'+(activeSeriesId===s.id?' active':'');
+    b.textContent=s.name;b.onclick=()=>{activeSeriesId=s.id;applySeriesLook(s);renderSeriesBar();toast('Series: '+s.name)};
+    bar.appendChild(b);
+  });
+}
+if($('seriesNew'))$('seriesNew').onclick=()=>{
+  const name=prompt('Series name (e.g. Lena Vale Files, The Fold Issue 12):');
+  if(!name)return;
+  const arr=loadSeries();
+  const id='ser'+Date.now();
+  arr.unshift({id,name,look:captureSeriesLook(),createdAt:Date.now()});
+  saveSeries(arr.slice(0,20));
+  activeSeriesId=id;
+  renderSeriesBar();
+  toast('Series locked · new cards inherit this Look');
+};
+// When series active, re-apply look on blank / quickstart
+const _seriesHook=()=>{const s=getActiveSeries();if(s)applySeriesLook(s)};
+
+try{updateExportMeta();updatePairChip();renderSeriesBar()}catch(e){}
 
 // ---- Multi-card Spread (carousel export) ----
 let spreadSlides=[],spreadActive=0;
