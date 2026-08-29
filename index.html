@@ -2513,12 +2513,21 @@ function getGrainTile(){
   for(let i=0;i<d.length;i+=4){const v=Math.random()*255|0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
   octx.putImageData(id,0,0);_grainTile=oc;return oc;
 }
+let _videoGrainOverlay=null,_videoExport=false;
 function applyGrain(x,y,w,h){
   if(state.grain<=0.01)return;
+  // During video: one stretched grain pass (frozen look, far cheaper than per-frame tiling)
+  if(_videoExport){
+    const oc=getGrainTile();
+    ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+    ctx.globalAlpha=Math.min(0.4,state.grain*0.55);ctx.globalCompositeOperation='overlay';
+    ctx.drawImage(oc,x,y,w,h);
+    ctx.restore();
+    return;
+  }
   const oc=getGrainTile();
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
   ctx.globalAlpha=Math.min(0.5,state.grain*0.65);ctx.globalCompositeOperation='overlay';
-  // Tile instead of stretching a huge noise map every frame
   const tw=oc.width,th=oc.height;
   for(let yy=y;yy<y+h;yy+=th)for(let xx=x;xx<x+w;xx+=tw)ctx.drawImage(oc,xx,yy);
   ctx.restore();
@@ -2601,10 +2610,14 @@ function applyTexture(x,y,w,h){
   if(textureType==='none'||textureOpacity<=0.01)return;
   const oc=getTextureTile(textureType);
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
-  ctx.globalAlpha=Math.min(0.55,textureOpacity);
+  ctx.globalAlpha=Math.min(0.55,textureOpacity*( _videoExport?0.85:1));
   ctx.globalCompositeOperation=textureType==='dust'?'screen':'overlay';
-  const tw=oc.width,th=oc.height;
-  for(let yy=y;yy<y+h;yy+=th)for(let xx=x;xx<x+w;xx+=tw)ctx.drawImage(oc,xx,yy);
+  if(_videoExport){
+    ctx.drawImage(oc,x,y,w,h); // single blit while encoding
+  }else{
+    const tw=oc.width,th=oc.height;
+    for(let yy=y;yy<y+h;yy+=th)for(let xx=x;xx<x+w;xx+=tw)ctx.drawImage(oc,xx,yy);
+  }
   ctx.restore();
 }
 
@@ -2684,7 +2697,7 @@ if(freeLayout&&selectedLayer){
 if(showSafeGuides)try{/* guides drawn elsewhere */}catch(e){}
 try{runDesignTips(W,H)}catch(e){}
 try{checkContrast()}catch(e){}}
-function draw(){scheduleDraw()}
+function draw(){if(_videoExport)return;scheduleDraw()}
 function drawImmediate(){_drawPending=false;cancelAnimationFrame(_drawTimer);_realDraw()}
 
 function textBlockY(H,block,barH){
@@ -3365,6 +3378,11 @@ function supportsAnimExport(){
   }catch(e){return false}
 }
 function animMime(){
+  // Prefer VP8 on low-mem (cheaper encode); VP9 otherwise when available
+  if(LOW_MEM){
+    if(MediaRecorder.isTypeSupported('video/webm;codecs=vp8'))return 'video/webm;codecs=vp8';
+    if(MediaRecorder.isTypeSupported('video/webm'))return 'video/webm';
+  }
   if(MediaRecorder.isTypeSupported('video/webm;codecs=vp9'))return 'video/webm;codecs=vp9';
   if(MediaRecorder.isTypeSupported('video/webm;codecs=vp8'))return 'video/webm;codecs=vp8';
   return 'video/webm';
@@ -3414,57 +3432,69 @@ function coverRectKenBurns(ctx2,W,H,t,imgEl){
 async function downloadAnimated(){
   if(!supportsAnimExport())return toast('Animated export not supported in this browser');
   if(!animateOn)return toast('Enable Animate first');
+  if(_videoExport)return toast('Already encoding…');
   try{
     let d=exportDims();
-    // Cap Ultra+Animate to High res
     if(exportTier==='max'){
       const m=formatInfo(format);
       d=(m.out&&m.out.high)||d;
       toast('Ultra+Animate → High res for stability');
     }
     const W=d[0],H=d[1];
-    const fps=24;
-    const frames=Math.round(animateDur*fps);
-    const oc=document.createElement('canvas');
-    oc.width=W;oc.height=H;
-    const octx=oc.getContext('2d');
-    const stream=oc.captureStream(fps);
+    // LOW_MEM: 18fps, max 3s, cheaper codec/bitrate
+    let dur=animateDur;
+    if(LOW_MEM&&dur>3){dur=3;toast('Low-mem: animate capped to 3s')}
+    const fps=LOW_MEM?18:24;
+    const frames=Math.max(2,Math.round(dur*fps));
+    const bitrate=LOW_MEM?2000000:(W*H>2.5e6?4500000:5500000);
     const mime=animMime();
+    // Capture the main canvas directly — no second full-size blit canvas
+    const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
+    cancelAnimationFrame(_drawTimer);_drawPending=false;
+    liveScale=W/LW;canvas.width=W;canvas.height=H;
+    _videoExport=true;
+    // captureStream(0) + requestFrame when available for steadier frame delivery
+    const stream=canvas.captureStream(0);
+    const track=stream.getVideoTracks()[0];
     const chunks=[];
-    const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:LOW_MEM?2500000:6000000});
+    const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:bitrate});
     rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
     const done=new Promise((res,rej)=>{rec.onstop=()=>res();rec.onerror=rej});
-    showExportProgress(true,'Recording 0/'+frames,5);
-    rec.start();
-    // Snapshot text layers from main canvas each frame: draw KB bg then composite main design
-    // Approach: for each t, set a kenBurnsT global, force draw into offscreen via scale
-    const prevScale=liveScale,prevW=canvas.width,prevH=canvas.height;
-    liveScale=W/LW;canvas.width=W;canvas.height=H;
+    showExportProgress(true,'Encoding 0/'+frames+' · '+fps+'fps',4);
+    rec.start(200);
+    const frameBudget=1000/fps;
     for(let i=0;i<frames;i++){
       const t=i/(frames-1||1);
       window.__kenBurnsT=t;
+      const t0=performance.now();
       _realDraw();
-      octx.clearRect(0,0,W,H);
-      octx.drawImage(canvas,0,0);
-      showExportProgress(true,'Frame '+(i+1)+'/'+frames,8+(i/frames)*85);
-      await new Promise(r=>setTimeout(r,1000/fps));
+      try{
+        if(track&&typeof track.requestFrame==='function')track.requestFrame();
+      }catch(e){}
+      showExportProgress(true,'Frame '+(i+1)+'/'+frames+' · '+W+'×'+H,6+(i/frames)*88);
+      const elapsed=performance.now()-t0;
+      const wait=Math.max(0,frameBudget-elapsed);
+      if(wait>0)await new Promise(r=>setTimeout(r,wait));
+      else await new Promise(r=>setTimeout(r,0)); // yield even if behind
     }
     window.__kenBurnsT=null;
-    liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw();
     rec.stop();
     await done;
+    _videoExport=false;
+    liveScale=prevScale;canvas.width=prevW;canvas.height=prevH;_realDraw();
     const blob=new Blob(chunks,{type:mime.split(';')[0]});
     const a=document.createElement('a');
     a.download=productionFilename('webm');
     a.href=URL.createObjectURL(blob);
     a.click();
     showExportProgress(true,'Done',100);
-    setTimeout(()=>showExportProgress(false),500);
-    toast('Video exported · '+animateDur+'s WebM');
+    setTimeout(()=>showExportProgress(false),450);
+    toast('Video · '+dur+'s · '+fps+'fps · '+(LOW_MEM?'VP8/low-mem':'WebM'));
   }catch(e){
     console.warn(e);
-    window.__kenBurnsT=null;
+    window.__kenBurnsT=null;_videoExport=false;
     showExportProgress(false);
+    try{drawImmediate()}catch(err){}
     toast('Video export failed — try static PNG');
   }
 }
@@ -4555,7 +4585,7 @@ async function idbDel(key){
   // Lightweight service worker for offline shell
   if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const swCode=`
-      const CACHE='pressed-v27';
+      const CACHE='pressed-v28';
       self.addEventListener('install',e=>{
         e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest']).catch(()=>{}));
         self.skipWaiting();
